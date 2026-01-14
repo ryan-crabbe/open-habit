@@ -350,41 +350,41 @@ Habit management and app configuration.
 Push notification integration for habit reminders.
 
 ### Task 4.1: Notification Setup
-- [ ] **4.1.1** Configure expo-notifications
+- [x] **4.1.1** Configure expo-notifications
   - Request permissions on first launch
   - Handle permission denied gracefully
-- [ ] **4.1.2** Register notification handlers
+- [x] **4.1.2** Register notification handlers
   - Foreground notification handling
   - Background notification handling
   - Notification tap to open app
 
 ### Task 4.2: Schedule Reminders
-- [ ] **4.2.1** Create reminder scheduling logic
+- [x] **4.2.1** Create reminder scheduling logic
   - Schedule notification for each enabled reminder
   - Check if habit is scheduled for that day
   - Handle timezone correctly
-- [ ] **4.2.2** Reschedule on changes
+- [x] **4.2.2** Reschedule on changes
   - Update notifications when reminder edited
   - Cancel notifications when reminder deleted
   - Reschedule when habit frequency changes
-- [ ] **4.2.3** Daily rescheduling
+- [x] **4.2.3** Daily rescheduling
   - Reschedule upcoming week's notifications
   - Handle `every_n_days` dynamic scheduling
 
 ### Task 4.3: Notification Content
-- [ ] **4.3.1** Notification text
+- [x] **4.3.1** Notification text
   - Habit name in title
   - Encouraging message in body
   - Action buttons (optional): "Log" / "Skip"
-- [ ] **4.3.2** Deep linking
+- [x] **4.3.2** Deep linking
   - Tap notification opens Log tab
   - Scroll to/highlight relevant habit
 
 ### Task 4.4: Notification Settings Screen
-- [ ] **4.4.1** Global notification toggle
+- [x] **4.4.1** Global notification toggle
   - Enable/disable all notifications
   - Link to system settings if denied
-- [ ] **4.4.2** Per-habit reminder management
+- [x] **4.4.2** Per-habit reminder management
   - Link to habit's reminders from settings
   - Quick enable/disable toggles
 

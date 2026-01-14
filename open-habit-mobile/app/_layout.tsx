@@ -5,6 +5,7 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AppThemeProvider } from '@/hooks/use-app-theme';
+import { NotificationProvider } from '@/hooks/use-notifications';
 import { DatabaseProvider } from '@/database';
 
 export const unstable_settings = {
@@ -65,6 +66,13 @@ function RootLayoutContent() {
             presentation: 'card',
           }}
         />
+        <Stack.Screen
+          name="notification-settings"
+          options={{
+            headerShown: false,
+            presentation: 'card',
+          }}
+        />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
@@ -74,9 +82,11 @@ function RootLayoutContent() {
 export default function RootLayout() {
   return (
     <DatabaseProvider>
-      <AppThemeProvider>
-        <RootLayoutContent />
-      </AppThemeProvider>
+      <NotificationProvider>
+        <AppThemeProvider>
+          <RootLayoutContent />
+        </AppThemeProvider>
+      </NotificationProvider>
     </DatabaseProvider>
   );
 }

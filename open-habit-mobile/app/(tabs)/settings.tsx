@@ -133,10 +133,7 @@ export default function SettingsScreen() {
           <SettingsRow
             icon="bell.fill"
             title="Notifications"
-            onPress={() => {
-              // TODO: Navigate to notifications settings
-              console.log('Notifications');
-            }}
+            onPress={() => router.push('/notification-settings' as Href)}
           />
           <View style={styles.separator} />
           <SettingsRow

@@ -13,10 +13,10 @@ import type { AppSetting } from '../data/test-data';
 export type { AppSetting };
 
 // Known setting keys with their types
-export type SettingKey = 'theme' | 'week_start_day' | 'timezone' | 'last_export_date' | 'schema_version';
+export type SettingKey = 'theme' | 'week_start_day' | 'timezone' | 'last_export_date' | 'schema_version' | 'notifications_enabled';
 
 // Array of valid setting keys for runtime validation
-const VALID_SETTING_KEYS: readonly SettingKey[] = ['theme', 'week_start_day', 'timezone', 'last_export_date', 'schema_version'] as const;
+const VALID_SETTING_KEYS: readonly SettingKey[] = ['theme', 'week_start_day', 'timezone', 'last_export_date', 'schema_version', 'notifications_enabled'] as const;
 
 /**
  * Type guard to check if a string is a valid SettingKey
@@ -32,6 +32,7 @@ export const DEFAULT_SETTINGS: Record<SettingKey, string> = {
   timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
   last_export_date: '',
   schema_version: '1',
+  notifications_enabled: '1', // Enabled by default
 };
 
 /**
