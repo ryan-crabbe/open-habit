@@ -6,7 +6,7 @@
 
 import React, { useState } from 'react';
 import { StyleSheet, ScrollView, TouchableOpacity, View, Alert } from 'react-native';
-import { router } from 'expo-router';
+import { router, Href } from 'expo-router';
 
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
@@ -125,10 +125,7 @@ export default function SettingsScreen() {
           <SettingsRow
             icon="list.bullet"
             title="Manage Habits"
-            onPress={() => {
-              // TODO: Navigate to manage habits screen
-              console.log('Manage habits');
-            }}
+            onPress={() => router.push('/manage-habits' as Href)}
           />
         </ThemedView>
 

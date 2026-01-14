@@ -240,13 +240,13 @@ GitHub-style contribution graphs and streak visualization.
 Habit management and app configuration.
 
 ### Task 3.1: Settings Home Screen
-- [ ] **3.1.1** Build settings list layout
+- [x] **3.1.1** Build settings list layout
   - "HABITS" section header
   - "Create New Habit" button
   - "Manage Habits" row
   - "APP SETTINGS" section header
   - Settings rows (Notifications, Theme, Export)
-- [ ] **3.1.2** Navigation to sub-screens
+- [x] **3.1.2** Navigation to sub-screens
   - Link to create habit screen
   - Link to manage habits screen
   - Link to individual settings screens
@@ -289,29 +289,29 @@ Habit management and app configuration.
   - Show errors on failure
 
 ### Task 3.3: Edit Habit Screen
-- [ ] **3.3.1** Reuse create habit form
+- [x] **3.3.1** Reuse create habit form
   - Pre-populate fields with existing data
   - Change header to "Edit Habit"
-- [ ] **3.3.2** Update logic
+- [x] **3.3.2** Update logic
   - Update habit in database
   - Handle frequency type changes
-- [ ] **3.3.3** Delete habit option
+- [x] **3.3.3** Delete habit option
   - Delete button (danger style)
   - Confirmation dialog
   - Cascade delete completions/reminders
 
 ### Task 3.4: Manage Habits Screen
-- [ ] **3.4.1** Habits list
+- [x] **3.4.1** Habits list
   - Show all habits with name and color
   - Display frequency type summary
-- [ ] **3.4.2** Drag to reorder
+- [x] **3.4.2** Drag to reorder
   - Draggable list items
   - Update sort_order on drop
   - Visual drag handle
-- [ ] **3.4.3** Swipe to delete
+- [-] **3.4.3** Swipe to delete
   - Swipe left reveals delete button
   - Confirmation before delete
-- [ ] **3.4.4** Tap to edit
+- [x] **3.4.4** Tap to edit
   - Navigate to edit habit screen
 
 ### Task 3.5: Theme Settings

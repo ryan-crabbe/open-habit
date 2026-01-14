@@ -26,6 +26,20 @@ export default function RootLayout() {
               presentation: 'card',
             }}
           />
+          <Stack.Screen
+            name="manage-habits"
+            options={{
+              headerShown: false,
+              presentation: 'card',
+            }}
+          />
+          <Stack.Screen
+            name="edit-habit"
+            options={{
+              headerShown: false,
+              presentation: 'card',
+            }}
+          />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>
