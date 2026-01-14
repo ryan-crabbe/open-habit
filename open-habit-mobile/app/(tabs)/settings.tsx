@@ -1,0 +1,237 @@
+/**
+ * Settings Tab - Habit Management & App Configuration
+ *
+ * Create habits and manage app settings.
+ */
+
+import React, { useState } from 'react';
+import { StyleSheet, ScrollView, TouchableOpacity, View, Alert } from 'react-native';
+import { router } from 'expo-router';
+
+import { ThemedView } from '@/components/themed-view';
+import { ThemedText } from '@/components/themed-text';
+import { useDatabase, seedTestData, getDatabaseStats } from '@/database';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+
+interface SettingsRowProps {
+  icon: string;
+  title: string;
+  onPress: () => void;
+  showChevron?: boolean;
+}
+
+function SettingsRow({ icon, title, onPress, showChevron = true }: SettingsRowProps) {
+  const textColor = useThemeColor({}, 'text');
+  const iconColor = useThemeColor({}, 'icon');
+
+  return (
+    <TouchableOpacity style={styles.row} onPress={onPress} activeOpacity={0.7}>
+      <View style={styles.rowLeft}>
+        <IconSymbol name={icon as any} size={24} color={iconColor} />
+        <ThemedText style={styles.rowTitle}>{title}</ThemedText>
+      </View>
+      {showChevron && (
+        <IconSymbol name="chevron.right" size={20} color={iconColor} />
+      )}
+    </TouchableOpacity>
+  );
+}
+
+export default function SettingsScreen() {
+  const { db, isReady, error } = useDatabase();
+  const colorScheme = useColorScheme();
+  const textColor = useThemeColor({}, 'text');
+  const errorColor = Colors[colorScheme ?? 'light'].error;
+  const [isSeeding, setIsSeeding] = useState(false);
+
+  const handleSeedTestData = async () => {
+    if (!db) return;
+
+    Alert.alert(
+      'Seed Test Data',
+      'This will clear all existing data and replace it with test data. Are you sure?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Seed Data',
+          style: 'destructive',
+          onPress: async () => {
+            setIsSeeding(true);
+            try {
+              await seedTestData(db);
+              const stats = await getDatabaseStats(db);
+              Alert.alert(
+                'Success',
+                `Seeded ${stats.habits} habits, ${stats.completions} completions, ${stats.reminders} reminders`
+              );
+            } catch (err) {
+              console.error('Failed to seed data:', err);
+              Alert.alert('Error', 'Failed to seed test data');
+            } finally {
+              setIsSeeding(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleShowStats = async () => {
+    if (!db) return;
+    try {
+      const stats = await getDatabaseStats(db);
+      Alert.alert(
+        'Database Stats',
+        `Habits: ${stats.habits}\nCompletions: ${stats.completions}\nReminders: ${stats.reminders}`
+      );
+    } catch (err) {
+      console.error('Failed to get stats:', err);
+    }
+  };
+
+  if (error) {
+    return (
+      <ThemedView style={styles.container}>
+        <ThemedText style={[styles.errorText, { color: errorColor }]}>
+          Failed to initialize database: {error.message}
+        </ThemedText>
+      </ThemedView>
+    );
+  }
+
+  if (!isReady) {
+    return (
+      <ThemedView style={styles.container}>
+        <ThemedText>Loading...</ThemedText>
+      </ThemedView>
+    );
+  }
+
+  return (
+    <ThemedView style={styles.container}>
+      <ScrollView style={styles.content}>
+        {/* Habits Section */}
+        <ThemedText style={styles.sectionHeader}>HABITS</ThemedText>
+        <ThemedView style={styles.section}>
+          <SettingsRow
+            icon="plus.circle.fill"
+            title="Create New Habit"
+            onPress={() => router.push('/create-habit')}
+          />
+          <View style={styles.separator} />
+          <SettingsRow
+            icon="list.bullet"
+            title="Manage Habits"
+            onPress={() => {
+              // TODO: Navigate to manage habits screen
+              console.log('Manage habits');
+            }}
+          />
+        </ThemedView>
+
+        {/* App Settings Section */}
+        <ThemedText style={styles.sectionHeader}>APP SETTINGS</ThemedText>
+        <ThemedView style={styles.section}>
+          <SettingsRow
+            icon="bell.fill"
+            title="Notifications"
+            onPress={() => {
+              // TODO: Navigate to notifications settings
+              console.log('Notifications');
+            }}
+          />
+          <View style={styles.separator} />
+          <SettingsRow
+            icon="moon.fill"
+            title="Theme"
+            onPress={() => {
+              // TODO: Navigate to theme settings
+              console.log('Theme');
+            }}
+          />
+          <View style={styles.separator} />
+          <SettingsRow
+            icon="square.and.arrow.up"
+            title="Export Data"
+            onPress={() => {
+              // TODO: Navigate to export screen
+              console.log('Export data');
+            }}
+          />
+        </ThemedView>
+
+        {/* Dev Section - Only in development */}
+        {__DEV__ && (
+          <>
+            <ThemedText style={styles.sectionHeader}>DEVELOPER</ThemedText>
+            <ThemedView style={styles.section}>
+              <SettingsRow
+                icon="hammer.fill"
+                title={isSeeding ? 'Seeding...' : 'Seed Test Data'}
+                onPress={handleSeedTestData}
+                showChevron={false}
+              />
+              <View style={styles.separator} />
+              <SettingsRow
+                icon="info.circle.fill"
+                title="Database Stats"
+                onPress={handleShowStats}
+                showChevron={false}
+              />
+            </ThemedView>
+          </>
+        )}
+      </ScrollView>
+    </ThemedView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+  },
+  sectionHeader: {
+    fontSize: 13,
+    fontWeight: '600',
+    opacity: 0.6,
+    marginLeft: 16,
+    marginTop: 24,
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  section: {
+    marginHorizontal: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  rowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  rowTitle: {
+    fontSize: 17,
+  },
+  separator: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: 'rgba(128, 128, 128, 0.3)',
+    marginLeft: 52,
+  },
+  errorText: {
+    padding: 20,
+  },
+});
