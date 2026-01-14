@@ -142,19 +142,19 @@ export default function SettingsScreen() {
           <SettingsRow
             icon="moon.fill"
             title="Theme"
-            onPress={() => {
-              // TODO: Navigate to theme settings
-              console.log('Theme');
-            }}
+            onPress={() => router.push('/theme-settings' as Href)}
           />
           <View style={styles.separator} />
           <SettingsRow
             icon="square.and.arrow.up"
             title="Export Data"
-            onPress={() => {
-              // TODO: Navigate to export screen
-              console.log('Export data');
-            }}
+            onPress={() => router.push('/export-data' as Href)}
+          />
+          <View style={styles.separator} />
+          <SettingsRow
+            icon="calendar"
+            title="Week Starts On"
+            onPress={() => router.push('/week-start-settings' as Href)}
           />
         </ThemedView>
 

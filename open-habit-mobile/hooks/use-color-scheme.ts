@@ -1,1 +1,2 @@
-export { useColorScheme } from 'react-native';
+// Re-export from app theme to support user preference override
+export { useColorScheme } from './use-app-theme';

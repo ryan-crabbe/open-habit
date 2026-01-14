@@ -315,31 +315,31 @@ Habit management and app configuration.
   - Navigate to edit habit screen
 
 ### Task 3.5: Theme Settings
-- [ ] **3.5.1** Theme selector screen
-  - Light/Dark toggle or radio
+- [x] **3.5.1** Theme selector screen
+  - Light/Dark/System toggle
   - Preview of each theme
   - Save to app_settings
-- [ ] **3.5.2** Apply theme app-wide
+- [x] **3.5.2** Apply theme app-wide
   - Update theme context on change
   - Persist across app restarts
 
 ### Task 3.6: Export Data
-- [ ] **3.6.1** Export options screen
+- [x] **3.6.1** Export options screen
   - Export format selection (JSON, CSV)
   - Date range selection (optional)
-- [ ] **3.6.2** Generate export file
+- [x] **3.6.2** Generate export file
   - Query all data from database
   - Format as JSON or CSV
   - Use expo-file-system and expo-sharing
-- [ ] **3.6.3** Share/save export
+- [x] **3.6.3** Share/save export
   - Native share sheet
   - Update `last_export_date` setting
 
 ### Task 3.7: Week Start Day Setting
-- [ ] **3.7.1** Add to settings screen
+- [x] **3.7.1** Add to settings screen
   - Picker: Sunday or Monday
   - Save to app_settings
-- [ ] **3.7.2** Use in calculations
+- [x] **3.7.2** Use in calculations
   - Weekly habit week bounds
   - Calendar displays
 
