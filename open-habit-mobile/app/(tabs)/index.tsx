@@ -1,5 +1,5 @@
 /**
- * Log Tab - Today's Habits
+ * Log Tab - Today&apos;s Habits
  *
  * Main screen for logging daily habit completions.
  * Shows habits scheduled for today with tap-to-increment functionality.
@@ -274,7 +274,7 @@ export default function LogScreen() {
     return (
       <ThemedView style={styles.container}>
         <View style={styles.header}>
-          <ThemedText style={styles.title}>Today's Habits</ThemedText>
+          <ThemedText style={styles.title}>Today&apos;s Habits</ThemedText>
           <ThemedText style={styles.date}>{displayDate}</ThemedText>
         </View>
         <View style={styles.loadingContainer}>
@@ -316,7 +316,7 @@ export default function LogScreen() {
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>
-        <ThemedText style={styles.title}>Today's Habits</ThemedText>
+        <ThemedText style={styles.title}>Today&apos;s Habits</ThemedText>
         <ThemedText style={styles.date}>{displayDate}</ThemedText>
       </View>
 

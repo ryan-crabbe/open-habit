@@ -20,7 +20,6 @@ interface DailyFrequencyConfigProps {
 
 export function DailyFrequencyConfig({ targetCount, onChange }: DailyFrequencyConfigProps) {
   const backgroundColor = useThemeColor({}, 'backgroundSecondary');
-  const textColor = useThemeColor({}, 'text');
   const iconColor = useThemeColor({}, 'icon');
 
   const increment = () => onChange(Math.min(targetCount + 1, 99));

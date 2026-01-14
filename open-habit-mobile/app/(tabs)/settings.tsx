@@ -24,7 +24,6 @@ interface SettingsRowProps {
 }
 
 function SettingsRow({ icon, title, onPress, showChevron = true }: SettingsRowProps) {
-  const textColor = useThemeColor({}, 'text');
   const iconColor = useThemeColor({}, 'icon');
 
   return (
@@ -43,7 +42,6 @@ function SettingsRow({ icon, title, onPress, showChevron = true }: SettingsRowPr
 export default function SettingsScreen() {
   const { db, isReady, error } = useDatabase();
   const colorScheme = useColorScheme();
-  const textColor = useThemeColor({}, 'text');
   const errorColor = Colors[colorScheme ?? 'light'].error;
   const [isSeeding, setIsSeeding] = useState(false);
 

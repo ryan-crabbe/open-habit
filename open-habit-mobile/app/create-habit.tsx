@@ -21,7 +21,7 @@ import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useDatabase, createHabit, validateHabit } from '@/database';
-import { HabitColors, Spacing, BorderRadius, FontSizes, Colors } from '@/constants/theme';
+import { HabitColors, Spacing, FontSizes, Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { getLocalDate } from '@/utils/date';
 import type { FrequencyType, MissedDayBehavior, HabitInput } from '@/database/habits';

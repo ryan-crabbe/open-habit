@@ -164,71 +164,71 @@ Daily habit logging interface.
 GitHub-style contribution graphs and streak visualization.
 
 ### Task 2.1: Contribution Graph Component
-- [ ] **2.1.1** Build graph grid component
+- [x] **2.1.1** Build graph grid component
   - Render 52x7 grid for yearly view
   - Calculate cell positions
   - Handle scrolling for large grids
-- [ ] **2.1.2** Implement intensity coloring
+- [x] **2.1.2** Implement intensity coloring
   - Map completion percentage to color intensity
   - Support `partial` vs `binary` display modes
   - Use habit's color with varying opacity/lightness
-- [ ] **2.1.3** Add month/week labels
+- [x] **2.1.3** Add month/week labels
   - Month labels along top
   - Day labels along side (S M T W T F S)
 
 ### Task 2.2: View Modes
-- [ ] **2.2.1** Yearly view (default)
+- [x] **2.2.1** Yearly view (default)
   - 52 weeks x 7 days grid
   - Scroll horizontally through year
   - Current week highlighted
-- [ ] **2.2.2** Monthly view
+- [-] **2.2.2** Monthly view (deferred)
   - 4-5 weeks detailed view
   - Larger cells with count visible
   - Month navigation (prev/next)
-- [ ] **2.2.3** Weekly view
+- [-] **2.2.3** Weekly view (deferred)
   - 7 large cells with full details
   - Show completion count per day
   - Week navigation (prev/next)
-- [ ] **2.2.4** View mode dropdown/selector
+- [x] **2.2.4** View mode dropdown/selector
   - Picker in header
   - Persist selection per session
 
 ### Task 2.3: Weekly Habits Special View
-- [ ] **2.3.1** Weeks-per-year grid
+- [-] **2.3.1** Weeks-per-year grid (deferred)
   - Each cell = 1 week
   - 52 cells per year
   - Aggregate weekly completions
-- [ ] **2.3.2** Weekly progress calculation
+- [-] **2.3.2** Weekly progress calculation (deferred)
   - Sum completions within week bounds
   - Use `week_start_day` setting
   - Compare to weekly target
 
 ### Task 2.4: Streak Calculation & Display
-- [ ] **2.4.1** Implement streak calculator
+- [x] **2.4.1** Implement streak calculator
   - Current streak (consecutive days/weeks meeting target)
   - Best streak (all-time maximum)
   - Handle different frequency types
-- [ ] **2.4.2** Streak display component
+- [x] **2.4.2** Streak display component
   - "Current streak: X days" text
   - "Best: Y days" text
   - Optional streak badge/icon
 
 ### Task 2.5: Cell Tap Details
-- [ ] **2.5.1** Create detail modal/tooltip
+- [x] **2.5.1** Create detail modal/tooltip
   - Show date
   - Show completion count vs target
   - Show note if exists
   - Quick actions (edit, add note)
-- [ ] **2.5.2** Implement tap gesture on cells
+- [x] **2.5.2** Implement tap gesture on cells
   - Single tap to show details
   - Highlight selected cell
 
 ### Task 2.6: Progress List Screen
-- [ ] **2.6.1** Build scrollable habit list
+- [x] **2.6.1** Build scrollable habit list
   - Each habit has its own graph section
   - Habit name header with color
   - Collapsible sections (optional)
-- [ ] **2.6.2** Loading and performance
+- [x] **2.6.2** Loading and performance
   - Lazy load graphs as user scrolls
   - Virtualized list for many habits
   - Cache computed graph data

@@ -43,3 +43,40 @@ export function hexToRgba(hex: string, opacity: number): string {
 export function withDisabledOpacity(color: string): string {
   return hexToRgba(color, 0.25);
 }
+
+/**
+ * Empty cell colors for contribution graphs
+ */
+const EMPTY_CELL_COLORS = {
+  light: '#EBEDF0',
+  dark: '#161B22',
+};
+
+/**
+ * Gets a habit-specific intensity color based on completion percentage.
+ * Uses the habit's own color with varying opacity levels.
+ *
+ * @param percentage - Completion percentage (0-1)
+ * @param habitColor - The habit's hex color (e.g., "#2196F3")
+ * @param colorScheme - 'light' or 'dark'
+ * @returns Color string (hex for empty, rgba for others)
+ */
+export function getHabitIntensityColor(
+  percentage: number,
+  habitColor: string,
+  colorScheme: 'light' | 'dark'
+): string {
+  if (percentage === 0) {
+    return EMPTY_CELL_COLORS[colorScheme];
+  }
+  if (percentage < 0.25) {
+    return hexToRgba(habitColor, 0.25);
+  }
+  if (percentage < 0.5) {
+    return hexToRgba(habitColor, 0.5);
+  }
+  if (percentage < 0.75) {
+    return hexToRgba(habitColor, 0.75);
+  }
+  return habitColor; // 100% opacity for 75%+ completion
+}
