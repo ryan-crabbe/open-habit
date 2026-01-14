@@ -18,7 +18,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, router } from 'expo-router';
 
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
@@ -64,6 +64,7 @@ export default function LogScreen() {
   const loadIdRef = useRef(0);
 
   const [habits, setHabits] = useState<HabitWithCompletion[]>([]);
+  const [totalHabitCount, setTotalHabitCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -137,6 +138,7 @@ export default function LogScreen() {
       // Final check before updating state
       if (currentLoadId !== loadIdRef.current) return;
 
+      setTotalHabitCount(allHabits.length);
       setHabits(scheduledHabits);
     } catch (err) {
       console.error('Failed to load habits:', err);
@@ -322,13 +324,31 @@ export default function LogScreen() {
 
       {habits.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <ThemedView style={styles.emptyState}>
-            <IconSymbol name="checkmark.circle" size={48} color={textSecondary} />
-            <ThemedText style={styles.emptyTitle}>No habits scheduled</ThemedText>
-            <ThemedText style={[styles.emptySubtitle, { color: textSecondary }]}>
-              Create a habit in Settings to get started
-            </ThemedText>
-          </ThemedView>
+          {totalHabitCount === 0 ? (
+            // No habits created at all
+            <ThemedView style={styles.emptyState}>
+              <IconSymbol name="plus.circle" size={48} color={textSecondary} />
+              <ThemedText style={styles.emptyTitle}>No habits yet</ThemedText>
+              <ThemedText style={[styles.emptySubtitle, { color: textSecondary }]}>
+                Create your first habit to start tracking
+              </ThemedText>
+              <TouchableOpacity
+                style={[styles.createButton, { backgroundColor: tintColor }]}
+                onPress={() => router.push('/create-habit')}
+              >
+                <ThemedText style={styles.createButtonText}>Create Habit</ThemedText>
+              </TouchableOpacity>
+            </ThemedView>
+          ) : (
+            // Habits exist but none scheduled today
+            <ThemedView style={styles.emptyState}>
+              <IconSymbol name="checkmark.circle" size={48} color={tintColor} />
+              <ThemedText style={styles.emptyTitle}>All done for today!</ThemedText>
+              <ThemedText style={[styles.emptySubtitle, { color: textSecondary }]}>
+                No habits are scheduled for today. Enjoy your free time!
+              </ThemedText>
+            </ThemedView>
+          )}
         </View>
       ) : (
         <FlatList
@@ -527,6 +547,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     paddingHorizontal: Spacing.xl,
+  },
+  createButton: {
+    marginTop: Spacing.xl,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.xl,
+    borderRadius: BorderRadius.md,
+  },
+  createButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   errorText: {
     padding: Spacing.xl,

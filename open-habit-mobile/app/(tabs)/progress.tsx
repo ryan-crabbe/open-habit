@@ -5,16 +5,17 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { StyleSheet, FlatList, View, ActivityIndicator, RefreshControl } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { StyleSheet, FlatList, View, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native';
+import { useFocusEffect, router } from 'expo-router';
 
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { HabitProgressCard } from '@/components/progress';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useDatabase, getHabits, getCompletionsInRange } from '@/database';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors, Spacing, FontSizes } from '@/constants/theme';
+import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/theme';
 import { getLocalDate, addDays } from '@/utils/date';
 import type { Habit, HabitCompletion } from '@/database';
 
@@ -127,10 +128,17 @@ export default function ProgressScreen() {
     <ThemedView style={styles.container}>
       {habitsWithCompletions.length === 0 ? (
         <View style={styles.emptyState}>
-          <ThemedText style={styles.emptyTitle}>No habits yet</ThemedText>
+          <IconSymbol name="chart.bar" size={48} color={textSecondary} />
+          <ThemedText style={styles.emptyTitle}>No progress yet</ThemedText>
           <ThemedText style={[styles.emptySubtitle, { color: textSecondary }]}>
-            Create a habit in Settings to start tracking your progress
+            Create a habit and start logging to see your progress
           </ThemedText>
+          <TouchableOpacity
+            style={[styles.createButton, { backgroundColor: tintColor }]}
+            onPress={() => router.push('/create-habit')}
+          >
+            <ThemedText style={styles.createButtonText}>Create Habit</ThemedText>
+          </TouchableOpacity>
         </View>
       ) : (
         <FlatList
@@ -174,12 +182,24 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: FontSizes.xl,
     fontWeight: '600',
+    marginTop: Spacing.lg,
     marginBottom: Spacing.sm,
   },
   emptySubtitle: {
     fontSize: FontSizes.md,
     textAlign: 'center',
     lineHeight: FontSizes.md * 1.4,
+  },
+  createButton: {
+    marginTop: Spacing.xl,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.xl,
+    borderRadius: BorderRadius.md,
+  },
+  createButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   errorText: {
     padding: Spacing.xl,
