@@ -83,6 +83,7 @@ export function AppThemeProvider({ children }: AppThemeProviderProps) {
     async (pref: ThemePreference) => {
       if (!db) return;
 
+      const previousPreference = preference;
       setPreferenceState(pref);
 
       try {
@@ -95,11 +96,11 @@ export function AppThemeProvider({ children }: AppThemeProviderProps) {
         }
       } catch (err) {
         console.error('Failed to save theme preference:', err);
-        // Note: We don't revert since the UI already updated
-        // and it will reload correctly on next app start
+        // Revert on error
+        setPreferenceState(previousPreference);
       }
     },
-    [db]
+    [db, preference]
   );
 
   // Compute resolved color scheme
@@ -138,11 +139,10 @@ export function useAppTheme(): AppThemeContextValue {
  */
 export function useColorScheme(): 'light' | 'dark' {
   const context = useContext(AppThemeContext);
+  const systemColorScheme = useSystemColorScheme();
 
   // If not in provider context (e.g., during initial render), fall back to system
   if (!context) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const systemColorScheme = useSystemColorScheme();
     return systemColorScheme ?? 'light';
   }
 

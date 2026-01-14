@@ -29,7 +29,6 @@ import { Spacing, FontSizes } from '@/constants/theme';
 type ExportFormat = 'json' | 'csv';
 
 interface FormatOptionProps {
-  format: ExportFormat;
   label: string;
   description: string;
   isSelected: boolean;
@@ -73,6 +72,8 @@ export default function ExportDataScreen() {
     if (!db) return;
 
     setIsExporting(true);
+    let file: File | null = null;
+
     try {
       // Gather all data
       const data = await gatherExportData(db);
@@ -84,7 +85,7 @@ export default function ExportDataScreen() {
 
       // Create filename with date
       const filename = `openhabit-${getLocalDate()}.${extension}`;
-      const file = new File(Paths.cache, filename);
+      file = new File(Paths.cache, filename);
 
       // Write file
       await file.write(content);
@@ -104,13 +105,19 @@ export default function ExportDataScreen() {
 
       // Record export date
       await setLastExportDate(db);
-
-      Alert.alert('Success', 'Data exported successfully!');
     } catch (error) {
       console.error('Export failed:', error);
       Alert.alert('Error', 'Failed to export data. Please try again.');
     } finally {
       setIsExporting(false);
+      // Clean up temp file
+      if (file) {
+        try {
+          await file.delete();
+        } catch {
+          // Ignore cleanup errors
+        }
+      }
     }
   };
 
@@ -139,14 +146,12 @@ export default function ExportDataScreen() {
 
         <ThemedView style={[styles.optionsContainer, { backgroundColor: cardBackground }]}>
           <FormatOption
-            format="json"
             label="JSON"
             description="Full data export with all details. Best for backups and importing to other apps."
             isSelected={selectedFormat === 'json'}
             onPress={() => setSelectedFormat('json')}
           />
           <FormatOption
-            format="csv"
             label="CSV"
             description="Spreadsheet format. Good for viewing in Excel or Google Sheets."
             isSelected={selectedFormat === 'csv'}
