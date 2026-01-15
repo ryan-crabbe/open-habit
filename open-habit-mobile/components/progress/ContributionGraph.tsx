@@ -15,6 +15,8 @@ import { Spacing, FontSizes } from '@/constants/theme';
 import { getLocalDate, addDays, getDayOfWeek, parseLocalDate } from '@/utils/date';
 import { getTargetForDate, isHabitScheduledForDate } from '@/utils/habit-schedule';
 import type { Habit, HabitCompletion } from '@/database';
+import type { ViewMode } from './ViewModeSelector';
+import { VIEW_MODE_CONFIG } from './ViewModeSelector';
 
 // Day labels for left side
 const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -22,10 +24,10 @@ const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 // Month labels
 const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-// Grid configuration
-const CELL_SIZE = 11;
+// Default grid configuration
+const DEFAULT_CELL_SIZE = 11;
 const CELL_GAP = 3;
-const WEEKS_TO_SHOW = 52;
+const DEFAULT_WEEKS_TO_SHOW = 52;
 const DAYS_PER_WEEK = 7;
 
 interface ContributionGraphProps {
@@ -39,6 +41,12 @@ interface ContributionGraphProps {
   selectedDate?: string | null;
   /** Today's date (YYYY-MM-DD), defaults to current date */
   today?: string;
+  /** Year to display (calendar year view). If provided and viewMode is 'year', shows Jan 1 - Dec 31 */
+  year?: number;
+  /** Ref callback to get ScrollView for programmatic scrolling */
+  scrollViewRef?: React.RefObject<ScrollView | null>;
+  /** View mode for different time ranges and cell sizes */
+  viewMode?: ViewMode;
 }
 
 interface CellData {
@@ -48,7 +56,36 @@ interface CellData {
 }
 
 /**
- * Generates week columns for the graph
+ * Calculates cell data (percentage) for a given date
+ */
+function calculateCellData(
+  date: string,
+  habit: Habit,
+  completionMap: Map<string, HabitCompletion>
+): CellData {
+  const completion = completionMap.get(date);
+  let percentage = 0;
+
+  if (completion && completion.count > 0) {
+    const isScheduled = isHabitScheduledForDate(habit, date);
+    if (isScheduled) {
+      const target = getTargetForDate(habit, date);
+      if (habit.completion_display === 'binary') {
+        percentage = completion.count >= target ? 1 : 0;
+      } else {
+        percentage = Math.min(completion.count / target, 1);
+      }
+    } else {
+      // Completed on non-scheduled day - show as partial
+      percentage = 0.5;
+    }
+  }
+
+  return { date, percentage, completion };
+}
+
+/**
+ * Generates week columns for a rolling window (default mode)
  */
 function generateWeekColumns(
   habit: Habit,
@@ -73,30 +110,54 @@ function generateWeekColumns(
     const weekCells: CellData[] = [];
 
     for (let day = 0; day < DAYS_PER_WEEK; day++) {
-      const completion = completionMap.get(currentDate);
-      let percentage = 0;
+      weekCells.push(calculateCellData(currentDate, habit, completionMap));
+      currentDate = addDays(currentDate, 1);
+    }
 
-      if (completion && completion.count > 0) {
-        const isScheduled = isHabitScheduledForDate(habit, currentDate);
-        if (isScheduled) {
-          const target = getTargetForDate(habit, currentDate);
-          if (habit.completion_display === 'binary') {
-            percentage = completion.count >= target ? 1 : 0;
-          } else {
-            percentage = Math.min(completion.count / target, 1);
-          }
-        } else {
-          // Completed on non-scheduled day - show as partial
-          percentage = 0.5;
-        }
-      }
+    weeks.push(weekCells);
+  }
 
-      weekCells.push({
-        date: currentDate,
-        percentage,
-        completion,
-      });
+  return weeks;
+}
 
+/**
+ * Generates week columns for a calendar year (Jan 1 - Dec 31)
+ */
+function generateYearColumns(
+  habit: Habit,
+  completionMap: Map<string, HabitCompletion>,
+  year: number
+): CellData[][] {
+  const weeks: CellData[][] = [];
+
+  // Jan 1 of the year
+  const jan1 = `${year}-01-01`;
+  const jan1Date = parseLocalDate(jan1);
+  const jan1DayOfWeek = getDayOfWeek(jan1Date);
+
+  // Find the Sunday before or on Jan 1
+  const gridStartDate = addDays(jan1, -jan1DayOfWeek);
+
+  // Dec 31 of the year
+  const dec31 = `${year}-12-31`;
+  const dec31Date = parseLocalDate(dec31);
+  const dec31DayOfWeek = getDayOfWeek(dec31Date);
+
+  // Find the Saturday after or on Dec 31
+  const gridEndDate = addDays(dec31, 6 - dec31DayOfWeek);
+
+  // Calculate number of weeks
+  const startMs = parseLocalDate(gridStartDate).getTime();
+  const endMs = parseLocalDate(gridEndDate).getTime();
+  const numWeeks = Math.round((endMs - startMs) / (7 * 24 * 60 * 60 * 1000)) + 1;
+
+  // Generate week by week
+  let currentDate = gridStartDate;
+  for (let week = 0; week < numWeeks; week++) {
+    const weekCells: CellData[] = [];
+
+    for (let day = 0; day < DAYS_PER_WEEK; day++) {
+      weekCells.push(calculateCellData(currentDate, habit, completionMap));
       currentDate = addDays(currentDate, 1);
     }
 
@@ -136,11 +197,19 @@ function ContributionGraphComponent({
   onCellPress,
   selectedDate,
   today,
+  year,
+  scrollViewRef,
+  viewMode = 'year',
 }: ContributionGraphProps) {
   const textSecondary = useThemeColor({}, 'textSecondary');
 
   // Use provided today or get current date
   const currentDate = today ?? getLocalDate();
+
+  // Get configuration for the current view mode
+  const modeConfig = VIEW_MODE_CONFIG[viewMode];
+  const cellSize = modeConfig.cellSize;
+  const weeksToShow = modeConfig.weeks;
 
   // Create completion lookup map
   const completionMap = useMemo(() => {
@@ -149,10 +218,15 @@ function ContributionGraphComponent({
     return map;
   }, [completions]);
 
-  // Generate week columns
+  // Generate week columns based on view mode
   const weeks = useMemo(() => {
-    return generateWeekColumns(habit, completionMap, currentDate, WEEKS_TO_SHOW);
-  }, [habit, completionMap, currentDate]);
+    // For year view mode with year prop, use calendar year
+    if (viewMode === 'year' && year !== undefined) {
+      return generateYearColumns(habit, completionMap, year);
+    }
+    // Otherwise use rolling window with configured weeks
+    return generateWeekColumns(habit, completionMap, currentDate, weeksToShow);
+  }, [habit, completionMap, currentDate, year, viewMode, weeksToShow]);
 
   // Calculate month label positions
   const monthLabels = useMemo(() => {
@@ -164,8 +238,8 @@ function ContributionGraphComponent({
     onCellPress?.(date, completion);
   }, [completionMap, onCellPress]);
 
-  // Calculate total width
-  const gridWidth = WEEKS_TO_SHOW * (CELL_SIZE + CELL_GAP);
+  // Calculate total width based on actual weeks and cell size
+  const gridWidth = weeks.length * (cellSize + CELL_GAP);
 
   return (
     <View style={styles.container}>
@@ -184,7 +258,7 @@ function ContributionGraphComponent({
                 key={`${label}-${week}`}
                 style={[
                   styles.monthLabel,
-                  { color: textSecondary, left: week * (CELL_SIZE + CELL_GAP) },
+                  { color: textSecondary, left: week * (cellSize + CELL_GAP) },
                 ]}
               >
                 {label}
@@ -203,9 +277,9 @@ function ContributionGraphComponent({
               key={`day-${index}`}
               style={[
                 styles.dayLabel,
-                { color: textSecondary, height: CELL_SIZE + CELL_GAP },
-                // Only show S, T, S labels (every other one)
-                index % 2 === 0 ? {} : styles.hiddenLabel,
+                { color: textSecondary, height: cellSize + CELL_GAP },
+                // Only show S, T, S labels (every other one) for small cells
+                cellSize < 20 && index % 2 !== 0 && styles.hiddenLabel,
               ]}
             >
               {label}
@@ -215,14 +289,15 @@ function ContributionGraphComponent({
 
         {/* Scrollable grid */}
         <ScrollView
+          ref={scrollViewRef}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
           <View style={styles.grid}>
             {weeks.map((week, weekIndex) => (
-              <View key={`week-${weekIndex}`} style={styles.weekColumn}>
-                {week.map((cell, dayIndex) => (
+              <View key={`week-${weekIndex}`} style={[styles.weekColumn, { marginRight: CELL_GAP }]}>
+                {week.map((cell) => (
                   <View
                     key={cell.date}
                     style={[styles.cellWrapper, { marginBottom: CELL_GAP }]}
@@ -233,7 +308,7 @@ function ContributionGraphComponent({
                       habitColor={habit.color}
                       isSelected={selectedDate === cell.date}
                       onPress={onCellPress ? handleCellPress : undefined}
-                      size={CELL_SIZE}
+                      size={cellSize}
                     />
                   </View>
                 ))}
@@ -287,7 +362,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   weekColumn: {
-    marginRight: CELL_GAP,
+    // marginRight applied inline with dynamic CELL_GAP
   },
   cellWrapper: {
     // Wrapper for spacing

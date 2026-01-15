@@ -13,6 +13,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -45,6 +46,7 @@ interface FormState {
   frequencyStartDate: string;
   missedDayBehavior: MissedDayBehavior;
   color: string;
+  allowOverload: boolean;
   errors: Record<string, string>;
   isSubmitting: boolean;
 }
@@ -59,6 +61,7 @@ type FormAction =
   | { type: 'SET_FREQUENCY_START_DATE'; payload: string }
   | { type: 'SET_MISSED_DAY_BEHAVIOR'; payload: MissedDayBehavior }
   | { type: 'SET_COLOR'; payload: string }
+  | { type: 'SET_ALLOW_OVERLOAD'; payload: boolean }
   | { type: 'SET_ERRORS'; payload: Record<string, string> }
   | { type: 'RESET_ERRORS' }
   | { type: 'SET_SUBMITTING'; payload: boolean };
@@ -72,6 +75,7 @@ const initialState: FormState = {
   frequencyStartDate: getLocalDate(),
   missedDayBehavior: 'continue',
   color: HabitColors[0],
+  allowOverload: true,
   errors: {},
   isSubmitting: false,
 };
@@ -103,6 +107,8 @@ function formReducer(state: FormState, action: FormAction): FormState {
       return { ...state, missedDayBehavior: action.payload };
     case 'SET_COLOR':
       return { ...state, color: action.payload };
+    case 'SET_ALLOW_OVERLOAD':
+      return { ...state, allowOverload: action.payload };
     case 'SET_ERRORS':
       return { ...state, errors: action.payload };
     case 'RESET_ERRORS':
@@ -138,6 +144,7 @@ export default function CreateHabitScreen() {
       name: state.name.trim(),
       frequency_type: state.frequencyType,
       color: state.color,
+      allow_overload: state.allowOverload ? 1 : 0,
     };
 
     // Add type-specific fields
@@ -291,6 +298,22 @@ export default function CreateHabitScreen() {
               onChange={(color) => dispatch({ type: 'SET_COLOR', payload: color })}
             />
           </FormSection>
+
+          <FormSection label="Options">
+            <View style={styles.optionRow}>
+              <View style={styles.optionTextContainer}>
+                <ThemedText style={styles.optionLabel}>Allow exceeding target</ThemedText>
+                <ThemedText style={[styles.optionHint, { color: textSecondaryColor }]}>
+                  When off, tapping stops at target count
+                </ThemedText>
+              </View>
+              <Switch
+                value={state.allowOverload}
+                onValueChange={(value) => dispatch({ type: 'SET_ALLOW_OVERLOAD', payload: value })}
+                trackColor={{ true: tintColor }}
+              />
+            </View>
+          </FormSection>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -340,5 +363,21 @@ const styles = StyleSheet.create({
   },
   errorText: {
     padding: Spacing.xl,
+  },
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  optionTextContainer: {
+    flex: 1,
+    marginRight: Spacing.md,
+  },
+  optionLabel: {
+    fontSize: FontSizes.md,
+  },
+  optionHint: {
+    fontSize: FontSizes.sm,
+    marginTop: 2,
   },
 });

@@ -25,6 +25,7 @@ export interface Habit {
   completion_display: CompletionDisplay;
   color: string;
   icon: string | null;
+  allow_overload: 0 | 1;  // 1 = allow exceeding target, 0 = cap at target
   sort_order: number;
   created_at: string;
   updated_at: string;
@@ -74,6 +75,7 @@ export const TEST_HABITS: Habit[] = [
     completion_display: 'partial',
     color: '#2196F3',
     icon: 'water-drop',
+    allow_overload: 1,
     sort_order: 0,
     created_at: '2026-01-01T08:00:00-05:00',
     updated_at: '2026-01-01T08:00:00-05:00',
@@ -91,6 +93,7 @@ export const TEST_HABITS: Habit[] = [
     completion_display: 'binary',
     color: '#9C27B0',
     icon: 'meditation',
+    allow_overload: 0,  // Can't meditate more than once
     sort_order: 1,
     created_at: '2026-01-01T08:00:00-05:00',
     updated_at: '2026-01-01T08:00:00-05:00',
@@ -108,6 +111,7 @@ export const TEST_HABITS: Habit[] = [
     completion_display: 'binary',
     color: '#FF5722',
     icon: 'book',
+    allow_overload: 1,
     sort_order: 2,
     created_at: '2026-01-01T08:00:00-05:00',
     updated_at: '2026-01-01T08:00:00-05:00',
@@ -125,6 +129,7 @@ export const TEST_HABITS: Habit[] = [
     completion_display: 'binary',
     color: '#4CAF50',
     icon: 'dumbbell',
+    allow_overload: 1,
     sort_order: 3,
     created_at: '2026-01-01T08:00:00-05:00',
     updated_at: '2026-01-01T08:00:00-05:00',
@@ -142,6 +147,7 @@ export const TEST_HABITS: Habit[] = [
     completion_display: 'binary',
     color: '#607D8B',
     icon: 'piano',
+    allow_overload: 1,
     sort_order: 4,
     created_at: '2026-01-01T08:00:00-05:00',
     updated_at: '2026-01-01T08:00:00-05:00',
@@ -159,6 +165,7 @@ export const TEST_HABITS: Habit[] = [
     completion_display: 'binary',
     color: '#FF9800',
     icon: 'broom',
+    allow_overload: 0,  // Can only clean once
     sort_order: 5,
     created_at: '2026-01-01T08:00:00-05:00',
     updated_at: '2026-01-01T08:00:00-05:00',
@@ -176,6 +183,7 @@ export const TEST_HABITS: Habit[] = [
     completion_display: 'binary',
     color: '#00BCD4',
     icon: 'washing-machine',
+    allow_overload: 0,  // Can only do laundry once
     sort_order: 6,
     created_at: '2026-01-01T08:00:00-05:00',
     updated_at: '2026-01-01T08:00:00-05:00',
@@ -193,6 +201,7 @@ export const TEST_HABITS: Habit[] = [
     completion_display: 'binary',
     color: '#E91E63',
     icon: 'running',
+    allow_overload: 1,
     sort_order: 7,
     created_at: '2026-01-01T08:00:00-05:00',
     updated_at: '2026-01-01T08:00:00-05:00',
@@ -210,6 +219,7 @@ export const TEST_HABITS: Habit[] = [
     completion_display: 'partial',
     color: '#673AB7',
     icon: 'phone',
+    allow_overload: 1,
     sort_order: 8,
     created_at: '2026-01-01T08:00:00-05:00',
     updated_at: '2026-01-01T08:00:00-05:00',
@@ -227,6 +237,7 @@ export const TEST_HABITS: Habit[] = [
     completion_display: 'binary',
     color: '#8BC34A',
     icon: 'pill',
+    allow_overload: 0,  // Only take vitamins twice
     sort_order: 9,
     created_at: '2026-01-01T08:00:00-05:00',
     updated_at: '2026-01-01T08:00:00-05:00',

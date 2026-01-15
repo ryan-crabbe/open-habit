@@ -11,7 +11,15 @@ import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { Spacing, FontSizes, BorderRadius } from '@/constants/theme';
 
-export type ViewMode = 'yearly' | 'monthly' | 'weekly';
+export type ViewMode = 'year' | '6months' | 'month' | 'week';
+
+// Configuration for each view mode
+export const VIEW_MODE_CONFIG: Record<ViewMode, { weeks: number; cellSize: number; label: string }> = {
+  year: { weeks: 52, cellSize: 11, label: 'Year' },
+  '6months': { weeks: 26, cellSize: 14, label: '6 Mo' },
+  month: { weeks: 5, cellSize: 24, label: 'Month' },
+  week: { weeks: 1, cellSize: 40, label: 'Week' },
+};
 
 interface ViewModeSelectorProps {
   /** Currently selected view mode */
@@ -21,9 +29,10 @@ interface ViewModeSelectorProps {
 }
 
 const VIEW_MODES: { value: ViewMode; label: string }[] = [
-  { value: 'yearly', label: 'Year' },
-  { value: 'monthly', label: 'Month' },
-  { value: 'weekly', label: 'Week' },
+  { value: 'year', label: VIEW_MODE_CONFIG.year.label },
+  { value: '6months', label: VIEW_MODE_CONFIG['6months'].label },
+  { value: 'month', label: VIEW_MODE_CONFIG.month.label },
+  { value: 'week', label: VIEW_MODE_CONFIG.week.label },
 ];
 
 export function ViewModeSelector({ value, onChange }: ViewModeSelectorProps) {

@@ -23,6 +23,7 @@ export interface HabitInput {
   completion_display?: CompletionDisplay;
   color: string;
   icon?: string | null;
+  allow_overload?: 0 | 1;  // 1 = allow exceeding target (default), 0 = cap at target
 }
 
 /**
@@ -114,8 +115,8 @@ export async function createHabit(
     `INSERT INTO habits (
       name, frequency_type, target_count, frequency_days, frequency_interval,
       frequency_start_date, missed_day_behavior, completion_display, color, icon,
-      sort_order, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      allow_overload, sort_order, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       input.name,
       input.frequency_type,
@@ -127,6 +128,7 @@ export async function createHabit(
       input.completion_display ?? 'partial',
       input.color,
       input.icon ?? null,
+      input.allow_overload ?? 1,
       sortOrder,
       timestamp,
       timestamp,
@@ -166,6 +168,7 @@ export async function updateHabit(
     completion_display: input.completion_display ?? existing.completion_display,
     color: input.color ?? existing.color,
     icon: input.icon !== undefined ? input.icon : existing.icon,
+    allow_overload: input.allow_overload !== undefined ? input.allow_overload : existing.allow_overload,
   };
 
   validateHabit(merged);
@@ -176,7 +179,7 @@ export async function updateHabit(
     `UPDATE habits SET
       name = ?, frequency_type = ?, target_count = ?, frequency_days = ?,
       frequency_interval = ?, frequency_start_date = ?, missed_day_behavior = ?,
-      completion_display = ?, color = ?, icon = ?, updated_at = ?
+      completion_display = ?, color = ?, icon = ?, allow_overload = ?, updated_at = ?
     WHERE id = ?`,
     [
       merged.name,
@@ -189,6 +192,7 @@ export async function updateHabit(
       merged.completion_display ?? 'partial',
       merged.color,
       merged.icon ?? null,
+      merged.allow_overload ?? 1,
       timestamp,
       id,
     ]

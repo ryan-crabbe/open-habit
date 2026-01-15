@@ -173,6 +173,12 @@ export default function LogScreen() {
   const handleTap = useCallback(async (item: HabitWithCompletion) => {
     if (!db) return;
 
+    // Check if at target and overload not allowed
+    const currentCount = item.completion?.count ?? 0;
+    if (item.habit.allow_overload === 0 && currentCount >= item.targetCount) {
+      return; // Don't increment - capped at target
+    }
+
     try {
       await incrementCompletion(db, item.habit.id, todayRef.current);
       await loadHabits();
@@ -186,6 +192,17 @@ export default function LogScreen() {
     setNoteText(item.completion?.note ?? '');
     setShowActionSheet(true);
   }, []);
+
+  const handleQuickUndo = useCallback(async (item: HabitWithCompletion) => {
+    if (!db || (item.completion?.count ?? 0) === 0) return;
+
+    try {
+      await decrementCompletion(db, item.habit.id, todayRef.current);
+      await loadHabits();
+    } catch (err) {
+      console.error('Failed to decrement:', err);
+    }
+  }, [db, loadHabits]);
 
   const handleSkip = useCallback(async () => {
     if (!db || !selectedHabit) return;
@@ -311,6 +328,7 @@ export default function LogScreen() {
         targetCount={item.targetCount}
         onTap={() => handleTap(item)}
         onLongPress={() => handleLongPress(item)}
+        onUndo={() => handleQuickUndo(item)}
       />
     );
   };

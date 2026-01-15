@@ -4,7 +4,7 @@
  * Defines the SQL schema for OpenHabit following docs/data-model.md
  */
 
-export const CURRENT_SCHEMA_VERSION = 1;
+export const CURRENT_SCHEMA_VERSION = 2;
 
 /**
  * V1 Schema - Initial database structure
@@ -71,12 +71,23 @@ CREATE TABLE IF NOT EXISTS app_settings (
 `;
 
 /**
+ * V2 Schema - Add allow_overload column to habits
+ * Allows users to configure whether a habit can be incremented beyond target_count
+ */
+export const SCHEMA_V2 = `
+-- Add allow_overload column: 1 = allow (default), 0 = cap at target
+ALTER TABLE habits ADD COLUMN allow_overload INTEGER NOT NULL DEFAULT 1 CHECK (allow_overload IN (0, 1));
+`;
+
+/**
  * Gets the schema SQL for a specific version
  */
 export function getSchemaForVersion(version: number): string | null {
   switch (version) {
     case 1:
       return SCHEMA_V1;
+    case 2:
+      return SCHEMA_V2;
     default:
       return null;
   }

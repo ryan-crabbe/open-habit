@@ -7,6 +7,6 @@
 export { GraphCell } from './GraphCell';
 export { ContributionGraph } from './ContributionGraph';
 export { StreakDisplay } from './StreakDisplay';
-export { ViewModeSelector, type ViewMode } from './ViewModeSelector';
+export { ViewModeSelector, VIEW_MODE_CONFIG, type ViewMode } from './ViewModeSelector';
 export { CellDetailModal } from './CellDetailModal';
 export { HabitProgressCard } from './HabitProgressCard';

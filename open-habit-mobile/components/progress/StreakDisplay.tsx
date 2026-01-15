@@ -4,7 +4,7 @@
  * Shows current and best streak for a habit.
  */
 
-import React from 'react';
+import React, { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -19,7 +19,7 @@ interface StreakDisplayProps {
   habitColor: string;
 }
 
-export function StreakDisplay({ streak, habitColor }: StreakDisplayProps) {
+function StreakDisplayComponent({ streak, habitColor }: StreakDisplayProps) {
   const textSecondary = useThemeColor({}, 'textSecondary');
 
   const unitLabel = streak.unit === 'weeks' ? 'week' : 'day';
@@ -76,3 +76,5 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(128, 128, 128, 0.3)',
   },
 });
+
+export const StreakDisplay = memo(StreakDisplayComponent);

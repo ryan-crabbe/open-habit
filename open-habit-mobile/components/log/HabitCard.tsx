@@ -11,6 +11,7 @@ import {
   View,
   Pressable,
   Animated,
+  TouchableOpacity,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
@@ -30,6 +31,7 @@ interface HabitCardProps {
   targetCount: number;
   onTap: () => void;
   onLongPress: () => void;
+  onUndo?: () => void;
 }
 
 /**
@@ -69,6 +71,7 @@ export function HabitCard({
   targetCount,
   onTap,
   onLongPress,
+  onUndo,
 }: HabitCardProps) {
   const colorScheme = useColorScheme() ?? 'light';
   const cardBackground = useThemeColor({}, 'card');
@@ -135,6 +138,11 @@ export function HabitCard({
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     onLongPress();
   }, [onLongPress]);
+
+  const handleUndo = useCallback(async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onUndo?.();
+  }, [onUndo]);
 
   // State-based styling
   const stateColors = Colors[colorScheme];
@@ -224,6 +232,20 @@ export function HabitCard({
                   />
                 )
               )}
+              {/* Undo button - shown when count > 0 */}
+              {count > 0 && onUndo && (
+                <TouchableOpacity
+                  onPress={handleUndo}
+                  style={styles.undoButton}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <IconSymbol
+                    name="arrow.uturn.backward"
+                    size={16}
+                    color={textSecondary}
+                  />
+                </TouchableOpacity>
+              )}
             </View>
           </View>
 
@@ -290,6 +312,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
+  },
+  undoButton: {
+    padding: Spacing.xs,
+    marginLeft: Spacing.xs,
+    opacity: 0.7,
   },
   noteIcon: {
     opacity: 0.7,

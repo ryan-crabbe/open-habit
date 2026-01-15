@@ -42,9 +42,11 @@ export default function ProgressScreen() {
     try {
       const habits = await getHabits(db);
 
-      // Calculate date range (52 weeks back from today)
+      // Load completions for all available data (from habit creation or Jan 1 of earliest year)
       const endDate = getLocalDate();
-      const startDate = addDays(endDate, -364);
+      const currentYear = new Date().getFullYear();
+      // Load up to 3 years of history by default (can adjust as needed)
+      const startDate = `${currentYear - 2}-01-01`;
 
       // Load completions for each habit
       const habitsData: HabitWithCompletions[] = await Promise.all(
