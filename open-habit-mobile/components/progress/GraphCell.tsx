@@ -3,13 +3,14 @@
  *
  * Individual cell in a contribution graph.
  * Shows intensity based on completion percentage using habit's color.
+ *
+ * PERF: colorScheme and selectionBorderColor are passed as props to avoid
+ * hook calls in each of 364+ cells per habit graph.
  */
 
 import React, { memo } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useThemeColor } from '@/hooks/use-theme-color';
 import { getHabitIntensityColor } from '@/utils/color';
 import { BorderRadius } from '@/constants/theme';
 
@@ -20,6 +21,10 @@ interface GraphCellProps {
   percentage: number;
   /** The habit's color (hex) */
   habitColor: string;
+  /** Color scheme for intensity calculation (passed from parent to avoid hook per cell) */
+  colorScheme: 'light' | 'dark';
+  /** Border color for selected state (passed from parent to avoid hook per cell) */
+  selectionBorderColor: string;
   /** Whether this cell is currently selected */
   isSelected?: boolean;
   /** Callback when cell is pressed */
@@ -32,13 +37,13 @@ function GraphCellComponent({
   date,
   percentage,
   habitColor,
+  colorScheme,
+  selectionBorderColor,
   isSelected = false,
   onPress,
   size = 11,
 }: GraphCellProps) {
-  const colorScheme = useColorScheme() ?? 'light';
   const backgroundColor = getHabitIntensityColor(percentage, habitColor, colorScheme);
-  const borderColor = useThemeColor({}, 'text');
 
   const handlePress = () => {
     onPress?.(date);
@@ -59,7 +64,7 @@ function GraphCellComponent({
             backgroundColor,
             borderRadius: BorderRadius.sm / 2,
           },
-          isSelected && { borderWidth: 2, borderColor },
+          isSelected && { borderWidth: 2, borderColor: selectionBorderColor },
         ]}
       />
     </TouchableOpacity>

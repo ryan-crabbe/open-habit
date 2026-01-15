@@ -11,6 +11,7 @@ import { StyleSheet, View, ScrollView } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { GraphCell } from './GraphCell';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Spacing, FontSizes } from '@/constants/theme';
 import { getLocalDate, addDays, getDayOfWeek, parseLocalDate } from '@/utils/date';
 import { getTargetForDate, isHabitScheduledForDate } from '@/utils/habit-schedule';
@@ -213,6 +214,8 @@ function ContributionGraphComponent({
   viewMode = 'year',
 }: ContributionGraphProps) {
   const textSecondary = useThemeColor({}, 'textSecondary');
+  const selectionBorderColor = useThemeColor({}, 'text');
+  const colorScheme = (useColorScheme() ?? 'light') as 'light' | 'dark';
 
   // Use provided today or get current date
   const currentDate = today ?? getLocalDate();
@@ -318,6 +321,8 @@ function ContributionGraphComponent({
                       date={cell.date}
                       percentage={cell.percentage}
                       habitColor={habit.color}
+                      colorScheme={colorScheme}
+                      selectionBorderColor={selectionBorderColor}
                       isSelected={selectedDate === cell.date}
                       onPress={onCellPress ? handleCellPress : undefined}
                       size={cellSize}
