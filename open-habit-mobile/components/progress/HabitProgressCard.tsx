@@ -18,9 +18,9 @@ import type { ViewMode } from './ViewModeSelector';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Spacing, FontSizes, BorderRadius, Shadows } from '@/constants/theme';
-import { calculateStreak } from '@/utils/streak';
 import { getLocalDate, parseLocalDate, getDayOfWeek, addDays } from '@/utils/date';
 import type { Habit, HabitCompletion } from '@/database';
+import type { StreakResult } from '@/utils/streak';
 
 // Grid configuration (match ContributionGraph)
 const CELL_SIZE = 11;
@@ -31,9 +31,11 @@ interface HabitProgressCardProps {
   habit: Habit;
   /** Completion records for this habit */
   completions: HabitCompletion[];
+  /** Pre-computed streak (calculated during data load, not render) */
+  streak: StreakResult;
 }
 
-function HabitProgressCardComponent({ habit, completions }: HabitProgressCardProps) {
+function HabitProgressCardComponent({ habit, completions, streak }: HabitProgressCardProps) {
   const colorScheme = useColorScheme() ?? 'light';
   const cardBackground = useThemeColor({}, 'card');
   const textSecondary = useThemeColor({}, 'textSecondary');
@@ -57,10 +59,7 @@ function HabitProgressCardComponent({ habit, completions }: HabitProgressCardPro
     HabitCompletion | undefined
   >(undefined);
 
-  // Calculate streak
-  const streak = useMemo(() => {
-    return calculateStreak(habit, completions);
-  }, [habit, completions]);
+  // streak is now received as a prop (pre-computed during data load)
 
   // Calculate scroll position to show current week (for current year)
   const scrollToCurrentWeek = useCallback(() => {

@@ -4,25 +4,31 @@
  * GitHub-style contribution graphs and streak visualization.
  */
 
-import React, { useState, useCallback } from 'react';
-import { StyleSheet, FlatList, View, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native';
+import React, { useState, useCallback, useRef } from 'react';
+import { StyleSheet, FlatList, View, ActivityIndicator, RefreshControl, TouchableOpacity, InteractionManager } from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
 
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { HabitProgressCard } from '@/components/progress';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useDatabase, getHabits, getCompletionsInRange } from '@/database';
+import { useDatabase, getHabits, getAllCompletionsInRange } from '@/database';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/theme';
-import { getLocalDate, addDays } from '@/utils/date';
+import { getLocalDate } from '@/utils/date';
+import { calculateStreak } from '@/utils/streak';
 import type { Habit, HabitCompletion } from '@/database';
+import type { StreakResult } from '@/utils/streak';
 
 interface HabitWithCompletions {
   habit: Habit;
   completions: HabitCompletion[];
+  streak: StreakResult; // Pre-computed to avoid blocking render
 }
+
+// Approximate card height for FlatList optimization
+const ESTIMATED_CARD_HEIGHT = 320;
 
 export default function ProgressScreen() {
   const { db, isReady, error } = useDatabase();
@@ -35,26 +41,35 @@ export default function ProgressScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Load habits and completions
+  // Load habits and completions with batch query (avoids N+1)
   const loadData = useCallback(async () => {
     if (!db) return;
 
     try {
       const habits = await getHabits(db);
 
-      // Load completions for all available data (from habit creation or Jan 1 of earliest year)
+      // Load current year only (can lazy-load previous years on navigation)
       const endDate = getLocalDate();
       const currentYear = new Date().getFullYear();
-      // Load up to 3 years of history by default (can adjust as needed)
-      const startDate = `${currentYear - 2}-01-01`;
+      const startDate = `${currentYear}-01-01`;
 
-      // Load completions for each habit
-      const habitsData: HabitWithCompletions[] = await Promise.all(
-        habits.map(async (habit) => {
-          const completions = await getCompletionsInRange(db, habit.id, startDate, endDate);
-          return { habit, completions };
-        })
-      );
+      // Single batch query for all completions (instead of N+1 queries)
+      const allCompletions = await getAllCompletionsInRange(db, startDate, endDate);
+
+      // Group completions by habit_id
+      const completionsByHabit = new Map<number, HabitCompletion[]>();
+      allCompletions.forEach((c) => {
+        const list = completionsByHabit.get(c.habit_id) || [];
+        list.push(c);
+        completionsByHabit.set(c.habit_id, list);
+      });
+
+      // Build habit data with pre-computed streaks (avoids blocking render)
+      const habitsData: HabitWithCompletions[] = habits.map((habit) => {
+        const completions = completionsByHabit.get(habit.id) || [];
+        const streak = calculateStreak(habit, completions);
+        return { habit, completions, streak };
+      });
 
       setHabitsWithCompletions(habitsData);
     } catch (err) {
@@ -62,25 +77,26 @@ export default function ProgressScreen() {
     }
   }, [db]);
 
-  // Load data when screen focuses
+  // Load data when screen focuses, using InteractionManager to avoid blocking UI
   useFocusEffect(
     useCallback(() => {
       let isMounted = true;
+      let interactionHandle: ReturnType<typeof InteractionManager.runAfterInteractions> | null = null;
 
-      async function load() {
-        if (!isReady) return;
+      // Wait for navigation animation to complete before loading
+      interactionHandle = InteractionManager.runAfterInteractions(async () => {
+        if (!isReady || !isMounted) return;
 
         setIsLoading(true);
         await loadData();
         if (isMounted) {
           setIsLoading(false);
         }
-      }
-
-      load();
+      });
 
       return () => {
         isMounted = false;
+        interactionHandle?.cancel();
       };
     }, [isReady, loadData])
   );
@@ -92,10 +108,14 @@ export default function ProgressScreen() {
     setIsRefreshing(false);
   }, [loadData]);
 
-  // Render habit card
+  // Render habit card with pre-computed streak
   const renderHabitCard = useCallback(
     ({ item }: { item: HabitWithCompletions }) => (
-      <HabitProgressCard habit={item.habit} completions={item.completions} />
+      <HabitProgressCard
+        habit={item.habit}
+        completions={item.completions}
+        streak={item.streak}
+      />
     ),
     []
   );
@@ -103,6 +123,16 @@ export default function ProgressScreen() {
   // Key extractor
   const keyExtractor = useCallback(
     (item: HabitWithCompletions) => item.habit.id.toString(),
+    []
+  );
+
+  // FlatList layout optimization - provides dimensions without measurement
+  const getItemLayout = useCallback(
+    (_data: ArrayLike<HabitWithCompletions> | null | undefined, index: number) => ({
+      length: ESTIMATED_CARD_HEIGHT,
+      offset: ESTIMATED_CARD_HEIGHT * index + Spacing.lg,
+      index,
+    }),
     []
   );
 
@@ -149,6 +179,13 @@ export default function ProgressScreen() {
           keyExtractor={keyExtractor}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          // Performance optimizations
+          windowSize={5}
+          maxToRenderPerBatch={3}
+          updateCellsBatchingPeriod={100}
+          removeClippedSubviews={true}
+          initialNumToRender={3}
+          getItemLayout={getItemLayout}
           refreshControl={
             <RefreshControl
               refreshing={isRefreshing}

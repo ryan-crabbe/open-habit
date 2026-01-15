@@ -237,3 +237,18 @@ export async function getAllCompletionsForDate(
     [date]
   );
 }
+
+/**
+ * Get all completions for all habits within a date range (batch query)
+ * More efficient than calling getCompletionsInRange for each habit
+ */
+export async function getAllCompletionsInRange(
+  db: SQLite.SQLiteDatabase,
+  startDate: string,
+  endDate: string
+): Promise<HabitCompletion[]> {
+  return db.getAllAsync<HabitCompletion>(
+    'SELECT * FROM habit_completions WHERE date >= ? AND date <= ? ORDER BY habit_id, date ASC',
+    [startDate, endDate]
+  );
+}

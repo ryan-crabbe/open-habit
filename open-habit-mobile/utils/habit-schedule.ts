@@ -8,6 +8,35 @@
 import { getDayOfWeek, daysBetween, addDays, getWeekBounds } from './date';
 import type { Habit } from '../data/test-data';
 
+// Cache for parsed frequency_days to avoid repeated JSON.parse calls
+// Keyed by habit.id + frequency_days string to handle updates
+const frequencyDaysCache = new Map<string, Record<string, number>>();
+
+/**
+ * Get parsed frequency_days with caching
+ * Avoids repeated JSON.parse calls in hot paths (e.g., rendering 364 cells)
+ */
+function getParsedFrequencyDays(habit: Habit): Record<string, number> | null {
+  if (!habit.frequency_days) return null;
+
+  // Cache key combines id and the actual JSON string (in case it's updated)
+  const cacheKey = `${habit.id}:${habit.frequency_days}`;
+
+  const cached = frequencyDaysCache.get(cacheKey);
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  try {
+    const parsed = JSON.parse(habit.frequency_days) as Record<string, number>;
+    frequencyDaysCache.set(cacheKey, parsed);
+    return parsed;
+  } catch (err) {
+    console.error(`Failed to parse frequency_days for habit ${habit.id}:`, err);
+    return null;
+  }
+}
+
 /**
  * Checks if a habit is scheduled for a specific date
  *
@@ -29,14 +58,9 @@ export function isHabitScheduledForDate(
     case 'specific_days': {
       // Check if today's day of week is in frequency_days
       const dayOfWeek = getDayOfWeek(date);
-      if (!habit.frequency_days) return false;
-      try {
-        const days = JSON.parse(habit.frequency_days);
-        return dayOfWeek.toString() in days;
-      } catch (err) {
-        console.error(`Failed to parse frequency_days for habit ${habit.id}:`, err);
-        return false;
-      }
+      const days = getParsedFrequencyDays(habit);
+      if (!days) return false;
+      return dayOfWeek.toString() in days;
     }
 
     case 'every_n_days': {
@@ -79,14 +103,9 @@ export function getTargetForDate(habit: Habit, date: string): number {
 
     case 'specific_days': {
       const dayOfWeek = getDayOfWeek(date);
-      if (!habit.frequency_days) return 0;
-      try {
-        const days = JSON.parse(habit.frequency_days) as Record<string, number>;
-        return days[dayOfWeek.toString()] ?? 0;
-      } catch (err) {
-        console.error(`Failed to parse frequency_days for habit ${habit.id}:`, err);
-        return 0;
-      }
+      const days = getParsedFrequencyDays(habit);
+      if (!days) return 0;
+      return days[dayOfWeek.toString()] ?? 0;
     }
 
     case 'every_n_days':

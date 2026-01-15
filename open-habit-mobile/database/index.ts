@@ -33,6 +33,7 @@ export {
   deleteCompletion,
   getWeeklyCompletionCount,
   getAllCompletionsForDate,
+  getAllCompletionsInRange,
 } from './completions';
 
 // Reminders CRUD
