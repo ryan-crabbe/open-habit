@@ -4,7 +4,7 @@
  * GitHub-style contribution graphs and streak visualization.
  */
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { StyleSheet, FlatList, View, ActivityIndicator, RefreshControl, TouchableOpacity, InteractionManager } from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
 
@@ -38,8 +38,9 @@ export default function ProgressScreen() {
   const textSecondary = useThemeColor({}, 'textSecondary');
 
   const [habitsWithCompletions, setHabitsWithCompletions] = useState<HabitWithCompletions[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const hasLoadedOnce = useRef(false);
 
   // Load habits and completions with batch query (avoids N+1)
   const loadData = useCallback(async () => {
@@ -77,27 +78,35 @@ export default function ProgressScreen() {
     }
   }, [db]);
 
-  // Load data when screen focuses, using InteractionManager to avoid blocking UI
+  // Initial load - only runs once when db is ready
+  useEffect(() => {
+    if (!isReady || hasLoadedOnce.current) return;
+
+    let isMounted = true;
+    const interactionHandle = InteractionManager.runAfterInteractions(async () => {
+      if (!isMounted) return;
+
+      await loadData();
+      if (isMounted) {
+        hasLoadedOnce.current = true;
+        setIsInitialLoading(false);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      interactionHandle.cancel();
+    };
+  }, [isReady, loadData]);
+
+  // Silent refresh when tab focuses (after initial load)
   useFocusEffect(
     useCallback(() => {
-      let isMounted = true;
-      let interactionHandle: ReturnType<typeof InteractionManager.runAfterInteractions> | null = null;
+      // Skip if not ready or still doing initial load
+      if (!isReady || !hasLoadedOnce.current) return;
 
-      // Wait for navigation animation to complete before loading
-      interactionHandle = InteractionManager.runAfterInteractions(async () => {
-        if (!isReady || !isMounted) return;
-
-        setIsLoading(true);
-        await loadData();
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      });
-
-      return () => {
-        isMounted = false;
-        interactionHandle?.cancel();
-      };
+      // Background refresh without showing spinner
+      loadData();
     }, [isReady, loadData])
   );
 
@@ -146,7 +155,7 @@ export default function ProgressScreen() {
     );
   }
 
-  if (!isReady || isLoading) {
+  if (!isReady || isInitialLoading) {
     return (
       <ThemedView style={styles.container}>
         <View style={styles.centered}>

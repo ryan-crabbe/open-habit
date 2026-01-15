@@ -169,8 +169,13 @@ function generateYearColumns(
 
 /**
  * Calculates which months appear at which week positions
+ * @param weeks - The week data
+ * @param targetYear - If provided, only show labels for months in this year
  */
-function calculateMonthLabels(weeks: CellData[][]): { week: number; label: string }[] {
+function calculateMonthLabels(
+  weeks: CellData[][],
+  targetYear?: number
+): { week: number; label: string }[] {
   const labels: { week: number; label: string }[] = [];
   let lastMonth = -1;
 
@@ -178,6 +183,12 @@ function calculateMonthLabels(weeks: CellData[][]): { week: number; label: strin
     // Check the first day of each week (Sunday)
     const firstDayDate = parseLocalDate(week[0].date);
     const month = firstDayDate.getMonth();
+    const cellYear = firstDayDate.getFullYear();
+
+    // Skip if this month is from a different year (e.g., Dec from previous year)
+    if (targetYear !== undefined && cellYear !== targetYear) {
+      return;
+    }
 
     if (month !== lastMonth) {
       labels.push({
@@ -230,8 +241,9 @@ function ContributionGraphComponent({
 
   // Calculate month label positions
   const monthLabels = useMemo(() => {
-    return calculateMonthLabels(weeks);
-  }, [weeks]);
+    // Pass year to filter out months from other years (e.g., Dec from previous year)
+    return calculateMonthLabels(weeks, viewMode === 'year' ? year : undefined);
+  }, [weeks, viewMode, year]);
 
   const handleCellPress = useCallback((date: string) => {
     const completion = completionMap.get(date);
