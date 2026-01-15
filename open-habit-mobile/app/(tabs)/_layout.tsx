@@ -35,6 +35,8 @@ export default function TabLayout() {
         options={{
           title: 'Progress',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="chart.bar.fill" color={color} />,
+          // Keep screen mounted to avoid unmounting 1,800+ cells on tab switch
+          unmountOnBlur: false,
         }}
       />
       <Tabs.Screen
