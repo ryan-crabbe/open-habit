@@ -7,6 +7,8 @@
 import React, { useState } from 'react';
 import { StyleSheet, ScrollView, TouchableOpacity, View, Alert } from 'react-native';
 import { router, Href } from 'expo-router';
+import { Freeze } from 'react-freeze';
+import { useIsFocused } from '@react-navigation/native';
 
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
@@ -44,6 +46,7 @@ export default function SettingsScreen() {
   const colorScheme = useColorScheme();
   const errorColor = Colors[colorScheme ?? 'light'].error;
   const [isSeeding, setIsSeeding] = useState(false);
+  const isFocused = useIsFocused();
 
   const handleSeedTestData = async () => {
     if (!db) return;
@@ -109,75 +112,77 @@ export default function SettingsScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
-      <ScrollView style={styles.content}>
-        {/* Habits Section */}
-        <ThemedText style={styles.sectionHeader}>HABITS</ThemedText>
-        <ThemedView style={styles.section}>
-          <SettingsRow
-            icon="plus.circle.fill"
-            title="Create New Habit"
-            onPress={() => router.push('/create-habit')}
-          />
-          <View style={styles.separator} />
-          <SettingsRow
-            icon="list.bullet"
-            title="Manage Habits"
-            onPress={() => router.push('/manage-habits' as Href)}
-          />
-        </ThemedView>
+    <Freeze freeze={!isFocused}>
+      <ThemedView style={styles.container}>
+        <ScrollView style={styles.content}>
+          {/* Habits Section */}
+          <ThemedText style={styles.sectionHeader}>HABITS</ThemedText>
+          <ThemedView style={styles.section}>
+            <SettingsRow
+              icon="plus.circle.fill"
+              title="Create New Habit"
+              onPress={() => router.push('/create-habit')}
+            />
+            <View style={styles.separator} />
+            <SettingsRow
+              icon="list.bullet"
+              title="Manage Habits"
+              onPress={() => router.push('/manage-habits' as Href)}
+            />
+          </ThemedView>
 
-        {/* App Settings Section */}
-        <ThemedText style={styles.sectionHeader}>APP SETTINGS</ThemedText>
-        <ThemedView style={styles.section}>
-          <SettingsRow
-            icon="bell.fill"
-            title="Notifications"
-            onPress={() => router.push('/notification-settings' as Href)}
-          />
-          <View style={styles.separator} />
-          <SettingsRow
-            icon="moon.fill"
-            title="Theme"
-            onPress={() => router.push('/theme-settings' as Href)}
-          />
-          <View style={styles.separator} />
-          <SettingsRow
-            icon="square.and.arrow.up"
-            title="Export Data"
-            onPress={() => router.push('/export-data' as Href)}
-          />
-          <View style={styles.separator} />
-          <SettingsRow
-            icon="calendar"
-            title="Week Starts On"
-            onPress={() => router.push('/week-start-settings' as Href)}
-          />
-        </ThemedView>
+          {/* App Settings Section */}
+          <ThemedText style={styles.sectionHeader}>APP SETTINGS</ThemedText>
+          <ThemedView style={styles.section}>
+            <SettingsRow
+              icon="bell.fill"
+              title="Notifications"
+              onPress={() => router.push('/notification-settings' as Href)}
+            />
+            <View style={styles.separator} />
+            <SettingsRow
+              icon="moon.fill"
+              title="Theme"
+              onPress={() => router.push('/theme-settings' as Href)}
+            />
+            <View style={styles.separator} />
+            <SettingsRow
+              icon="square.and.arrow.up"
+              title="Export Data"
+              onPress={() => router.push('/export-data' as Href)}
+            />
+            <View style={styles.separator} />
+            <SettingsRow
+              icon="calendar"
+              title="Week Starts On"
+              onPress={() => router.push('/week-start-settings' as Href)}
+            />
+          </ThemedView>
 
-        {/* Dev Section - Only in development */}
-        {__DEV__ && (
-          <>
-            <ThemedText style={styles.sectionHeader}>DEVELOPER</ThemedText>
-            <ThemedView style={styles.section}>
-              <SettingsRow
-                icon="hammer.fill"
-                title={isSeeding ? 'Seeding...' : 'Seed Test Data'}
-                onPress={handleSeedTestData}
-                showChevron={false}
-              />
-              <View style={styles.separator} />
-              <SettingsRow
-                icon="info.circle.fill"
-                title="Database Stats"
-                onPress={handleShowStats}
-                showChevron={false}
-              />
-            </ThemedView>
-          </>
-        )}
-      </ScrollView>
-    </ThemedView>
+          {/* Dev Section - Only in development */}
+          {__DEV__ && (
+            <>
+              <ThemedText style={styles.sectionHeader}>DEVELOPER</ThemedText>
+              <ThemedView style={styles.section}>
+                <SettingsRow
+                  icon="hammer.fill"
+                  title={isSeeding ? 'Seeding...' : 'Seed Test Data'}
+                  onPress={handleSeedTestData}
+                  showChevron={false}
+                />
+                <View style={styles.separator} />
+                <SettingsRow
+                  icon="info.circle.fill"
+                  title="Database Stats"
+                  onPress={handleShowStats}
+                  showChevron={false}
+                />
+              </ThemedView>
+            </>
+          )}
+        </ScrollView>
+      </ThemedView>
+    </Freeze>
   );
 }
 

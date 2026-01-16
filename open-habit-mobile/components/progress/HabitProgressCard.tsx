@@ -10,7 +10,7 @@ import { StyleSheet, View, TouchableOpacity, ScrollView } from 'react-native';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { ContributionGraph } from './ContributionGraph';
+import { SkiaContributionGraph } from './SkiaContributionGraph';
 import { StreakDisplay } from './StreakDisplay';
 import { CellDetailModal } from './CellDetailModal';
 import { ViewModeSelector, VIEW_MODE_CONFIG } from './ViewModeSelector';
@@ -76,14 +76,15 @@ function HabitProgressCardComponent({ habit, completions, streak }: HabitProgres
     const todayMs = parseLocalDate(today).getTime();
     const weeksFromStart = Math.floor((todayMs - startMs) / (7 * 24 * 60 * 60 * 1000));
 
-    // Scroll to show current week (with some padding on the left)
-    const scrollX = Math.max(0, (weeksFromStart - 4) * (CELL_SIZE + CELL_GAP));
+    // Calculate pixel offset (each week column is CELL_SIZE + CELL_GAP wide)
+    const targetWeek = Math.max(0, weeksFromStart - 4);
+    const scrollX = targetWeek * (CELL_SIZE + CELL_GAP);
     scrollViewRef.current.scrollTo({ x: scrollX, animated: false });
   }, [selectedYear, currentYear]);
 
   // Auto-scroll to current week when viewing current year
   useEffect(() => {
-    // Small delay to ensure the ScrollView is rendered
+    // Small delay to ensure the FlatList is rendered
     const timer = setTimeout(scrollToCurrentWeek, 100);
     return () => clearTimeout(timer);
   }, [scrollToCurrentWeek]);
@@ -169,9 +170,9 @@ function HabitProgressCardComponent({ habit, completions, streak }: HabitProgres
           </View>
         )}
 
-        {/* Contribution Graph */}
+        {/* Contribution Graph - Skia canvas for performance */}
         <View style={styles.graphContainer}>
-          <ContributionGraph
+          <SkiaContributionGraph
             habit={habit}
             completions={completions}
             onCellPress={handleCellPress}

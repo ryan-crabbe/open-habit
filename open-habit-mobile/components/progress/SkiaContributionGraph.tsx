@@ -1,20 +1,21 @@
 /**
- * ContributionGraph Component
+ * SkiaContributionGraph Component
  *
- * GitHub-style contribution graph showing habit completion data over time.
- * Displays a 52-week grid with day-of-week rows.
+ * High-performance contribution graph using Skia canvas rendering.
+ * Renders entire graph as a single canvas instead of 364+ React components.
  */
 
 import React, { useMemo, useCallback, memo } from 'react';
-import { StyleSheet, View, ScrollView } from 'react-native';
+import { StyleSheet, View, ScrollView, Pressable, GestureResponderEvent } from 'react-native';
+import { Canvas, RoundedRect, Text, useFont } from '@shopify/react-native-skia';
 
 import { ThemedText } from '@/components/themed-text';
-import { WeekColumn } from './WeekColumn';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Spacing, FontSizes } from '@/constants/theme';
 import { getLocalDate, addDays, getDayOfWeek, parseLocalDate } from '@/utils/date';
 import { getTargetForDate, isHabitScheduledForDate } from '@/utils/habit-schedule';
+import { getHabitIntensityColor } from '@/utils/color';
 import type { Habit, HabitCompletion } from '@/database';
 import type { ViewMode } from './ViewModeSelector';
 import { VIEW_MODE_CONFIG } from './ViewModeSelector';
@@ -25,28 +26,19 @@ const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 // Month labels
 const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-// Default grid configuration
-const DEFAULT_CELL_SIZE = 11;
+// Grid configuration
 const CELL_GAP = 3;
-const DEFAULT_WEEKS_TO_SHOW = 52;
 const DAYS_PER_WEEK = 7;
+const CELL_RADIUS = 2;
 
-interface ContributionGraphProps {
-  /** The habit to display */
+interface SkiaContributionGraphProps {
   habit: Habit;
-  /** Array of completions for the date range */
   completions: HabitCompletion[];
-  /** Callback when a cell is pressed */
   onCellPress?: (date: string, completion: HabitCompletion | undefined) => void;
-  /** Currently selected date */
   selectedDate?: string | null;
-  /** Today's date (YYYY-MM-DD), defaults to current date */
   today?: string;
-  /** Year to display (calendar year view). If provided and viewMode is 'year', shows Jan 1 - Dec 31 */
   year?: number;
-  /** Ref callback to get ScrollView for programmatic scrolling */
   scrollViewRef?: React.RefObject<ScrollView | null>;
-  /** View mode for different time ranges and cell sizes */
   viewMode?: ViewMode;
 }
 
@@ -77,48 +69,11 @@ function calculateCellData(
         percentage = Math.min(completion.count / target, 1);
       }
     } else {
-      // Completed on non-scheduled day - show as partial
       percentage = 0.5;
     }
   }
 
   return { date, percentage, completion };
-}
-
-/**
- * Generates week columns for a rolling window (default mode)
- */
-function generateWeekColumns(
-  habit: Habit,
-  completionMap: Map<string, HabitCompletion>,
-  endDate: string,
-  numWeeks: number
-): CellData[][] {
-  const weeks: CellData[][] = [];
-
-  // Find the Sunday of the week containing endDate
-  const endDateObj = parseLocalDate(endDate);
-  const endDayOfWeek = getDayOfWeek(endDateObj);
-  const weekEndDate = addDays(endDate, 6 - endDayOfWeek); // Go to Saturday
-
-  // Calculate the start date (numWeeks * 7 days back from week end)
-  const totalDays = numWeeks * 7;
-  const startDate = addDays(weekEndDate, -(totalDays - 1));
-
-  // Generate week by week
-  let currentDate = startDate;
-  for (let week = 0; week < numWeeks; week++) {
-    const weekCells: CellData[] = [];
-
-    for (let day = 0; day < DAYS_PER_WEEK; day++) {
-      weekCells.push(calculateCellData(currentDate, habit, completionMap));
-      currentDate = addDays(currentDate, 1);
-    }
-
-    weeks.push(weekCells);
-  }
-
-  return weeks;
 }
 
 /**
@@ -131,37 +86,58 @@ function generateYearColumns(
 ): CellData[][] {
   const weeks: CellData[][] = [];
 
-  // Jan 1 of the year
   const jan1 = `${year}-01-01`;
   const jan1Date = parseLocalDate(jan1);
   const jan1DayOfWeek = getDayOfWeek(jan1Date);
-
-  // Find the Sunday before or on Jan 1
   const gridStartDate = addDays(jan1, -jan1DayOfWeek);
 
-  // Dec 31 of the year
   const dec31 = `${year}-12-31`;
   const dec31Date = parseLocalDate(dec31);
   const dec31DayOfWeek = getDayOfWeek(dec31Date);
-
-  // Find the Saturday after or on Dec 31
   const gridEndDate = addDays(dec31, 6 - dec31DayOfWeek);
 
-  // Calculate number of weeks
   const startMs = parseLocalDate(gridStartDate).getTime();
   const endMs = parseLocalDate(gridEndDate).getTime();
   const numWeeks = Math.round((endMs - startMs) / (7 * 24 * 60 * 60 * 1000)) + 1;
 
-  // Generate week by week
   let currentDate = gridStartDate;
   for (let week = 0; week < numWeeks; week++) {
     const weekCells: CellData[] = [];
-
     for (let day = 0; day < DAYS_PER_WEEK; day++) {
       weekCells.push(calculateCellData(currentDate, habit, completionMap));
       currentDate = addDays(currentDate, 1);
     }
+    weeks.push(weekCells);
+  }
 
+  return weeks;
+}
+
+/**
+ * Generates week columns for a rolling window
+ */
+function generateWeekColumns(
+  habit: Habit,
+  completionMap: Map<string, HabitCompletion>,
+  endDate: string,
+  numWeeks: number
+): CellData[][] {
+  const weeks: CellData[][] = [];
+
+  const endDateObj = parseLocalDate(endDate);
+  const endDayOfWeek = getDayOfWeek(endDateObj);
+  const weekEndDate = addDays(endDate, 6 - endDayOfWeek);
+
+  const totalDays = numWeeks * 7;
+  const startDate = addDays(weekEndDate, -(totalDays - 1));
+
+  let currentDate = startDate;
+  for (let week = 0; week < numWeeks; week++) {
+    const weekCells: CellData[] = [];
+    for (let day = 0; day < DAYS_PER_WEEK; day++) {
+      weekCells.push(calculateCellData(currentDate, habit, completionMap));
+      currentDate = addDays(currentDate, 1);
+    }
     weeks.push(weekCells);
   }
 
@@ -170,8 +146,6 @@ function generateYearColumns(
 
 /**
  * Calculates which months appear at which week positions
- * @param weeks - The week data
- * @param targetYear - If provided, only show labels for months in this year
  */
 function calculateMonthLabels(
   weeks: CellData[][],
@@ -181,21 +155,16 @@ function calculateMonthLabels(
   let lastMonth = -1;
 
   weeks.forEach((week, weekIndex) => {
-    // Check the first day of each week (Sunday)
     const firstDayDate = parseLocalDate(week[0].date);
     const month = firstDayDate.getMonth();
     const cellYear = firstDayDate.getFullYear();
 
-    // Skip if this month is from a different year (e.g., Dec from previous year)
     if (targetYear !== undefined && cellYear !== targetYear) {
       return;
     }
 
     if (month !== lastMonth) {
-      labels.push({
-        week: weekIndex,
-        label: MONTH_LABELS[month],
-      });
+      labels.push({ week: weekIndex, label: MONTH_LABELS[month] });
       lastMonth = month;
     }
   });
@@ -203,7 +172,7 @@ function calculateMonthLabels(
   return labels;
 }
 
-function ContributionGraphComponent({
+function SkiaContributionGraphComponent({
   habit,
   completions,
   onCellPress,
@@ -212,15 +181,12 @@ function ContributionGraphComponent({
   year,
   scrollViewRef,
   viewMode = 'year',
-}: ContributionGraphProps) {
+}: SkiaContributionGraphProps) {
   const textSecondary = useThemeColor({}, 'textSecondary');
   const selectionBorderColor = useThemeColor({}, 'text');
   const colorScheme = (useColorScheme() ?? 'light') as 'light' | 'dark';
 
-  // Use provided today or get current date
   const currentDate = today ?? getLocalDate();
-
-  // Get configuration for the current view mode
   const modeConfig = VIEW_MODE_CONFIG[viewMode];
   const cellSize = modeConfig.cellSize;
   const weeksToShow = modeConfig.weeks;
@@ -232,38 +198,68 @@ function ContributionGraphComponent({
     return map;
   }, [completions]);
 
-  // Generate week columns based on view mode
+  // Generate week columns
   const weeks = useMemo(() => {
-    // For year view mode with year prop, use calendar year
     if (viewMode === 'year' && year !== undefined) {
       return generateYearColumns(habit, completionMap, year);
     }
-    // Otherwise use rolling window with configured weeks
     return generateWeekColumns(habit, completionMap, currentDate, weeksToShow);
   }, [habit, completionMap, currentDate, year, viewMode, weeksToShow]);
 
   // Calculate month label positions
   const monthLabels = useMemo(() => {
-    // Pass year to filter out months from other years (e.g., Dec from previous year)
     return calculateMonthLabels(weeks, viewMode === 'year' ? year : undefined);
   }, [weeks, viewMode, year]);
 
-  const handleCellPress = useCallback((date: string) => {
-    const completion = completionMap.get(date);
-    onCellPress?.(date, completion);
-  }, [completionMap, onCellPress]);
-
-  // Calculate total width based on actual weeks and cell size
+  // Calculate dimensions
   const gridWidth = weeks.length * (cellSize + CELL_GAP);
-
-  // Calculate grid height (7 cells + gaps)
   const gridHeight = DAYS_PER_WEEK * (cellSize + CELL_GAP) - CELL_GAP;
+
+  // Pre-compute all cell colors for Skia rendering
+  const cellColors = useMemo(() => {
+    return weeks.map((week) =>
+      week.map((cell) => getHabitIntensityColor(cell.percentage, habit.color, colorScheme))
+    );
+  }, [weeks, habit.color, colorScheme]);
+
+  // Handle touch - calculate which cell was pressed
+  const handlePress = useCallback(
+    (event: GestureResponderEvent) => {
+      if (!onCellPress) return;
+
+      const { locationX, locationY } = event.nativeEvent;
+
+      // Calculate week (column) and day (row) from coordinates
+      const weekIndex = Math.floor(locationX / (cellSize + CELL_GAP));
+      const dayIndex = Math.floor(locationY / (cellSize + CELL_GAP));
+
+      // Bounds check
+      if (weekIndex >= 0 && weekIndex < weeks.length && dayIndex >= 0 && dayIndex < DAYS_PER_WEEK) {
+        const cell = weeks[weekIndex][dayIndex];
+        onCellPress(cell.date, cell.completion);
+      }
+    },
+    [onCellPress, cellSize, weeks]
+  );
+
+  // Find selected cell position for highlight
+  const selectedPosition = useMemo(() => {
+    if (!selectedDate) return null;
+
+    for (let weekIndex = 0; weekIndex < weeks.length; weekIndex++) {
+      for (let dayIndex = 0; dayIndex < weeks[weekIndex].length; dayIndex++) {
+        if (weeks[weekIndex][dayIndex].date === selectedDate) {
+          return { weekIndex, dayIndex };
+        }
+      }
+    }
+    return null;
+  }, [selectedDate, weeks]);
 
   return (
     <View style={styles.container}>
       {/* Day labels column - fixed on left */}
       <View style={styles.dayLabelsColumn}>
-        {/* Spacer for month labels row */}
         <View style={styles.dayLabelsSpacer} />
         {DAY_LABELS.map((label, index) => (
           <ThemedText
@@ -271,7 +267,6 @@ function ContributionGraphComponent({
             style={[
               styles.dayLabel,
               { color: textSecondary, height: cellSize + CELL_GAP },
-              // Only show S, T, S labels (every other one) for small cells
               cellSize < 20 && index % 2 !== 0 && styles.hiddenLabel,
             ]}
           >
@@ -280,7 +275,7 @@ function ContributionGraphComponent({
         ))}
       </View>
 
-      {/* Scrollable area containing both month labels and grid */}
+      {/* Scrollable area */}
       <ScrollView
         ref={scrollViewRef}
         horizontal
@@ -288,7 +283,7 @@ function ContributionGraphComponent({
         style={styles.scrollView}
       >
         <View style={[styles.scrollContent, { width: gridWidth }]}>
-          {/* Month labels row - scrolls with grid */}
+          {/* Month labels row */}
           <View style={styles.monthLabelsRow}>
             {monthLabels.map(({ week, label }) => (
               <ThemedText
@@ -303,22 +298,39 @@ function ContributionGraphComponent({
             ))}
           </View>
 
-          {/* Grid of week columns */}
-          <View style={[styles.grid, { height: gridHeight }]}>
-            {weeks.map((week, index) => (
-              <WeekColumn
-                key={`week-${index}`}
-                weekData={week}
-                cellSize={cellSize}
-                cellGap={CELL_GAP}
-                habitColor={habit.color}
-                colorScheme={colorScheme}
-                selectionBorderColor={selectionBorderColor}
-                selectedDate={selectedDate}
-                onCellPress={onCellPress ? handleCellPress : undefined}
-              />
-            ))}
-          </View>
+          {/* Skia Canvas - single component for entire grid */}
+          <Pressable onPress={handlePress} disabled={!onCellPress}>
+            <Canvas style={{ width: gridWidth, height: gridHeight }}>
+              {/* Render all cells as rounded rectangles */}
+              {weeks.map((week, weekIndex) =>
+                week.map((cell, dayIndex) => (
+                  <RoundedRect
+                    key={cell.date}
+                    x={weekIndex * (cellSize + CELL_GAP)}
+                    y={dayIndex * (cellSize + CELL_GAP)}
+                    width={cellSize}
+                    height={cellSize}
+                    r={CELL_RADIUS}
+                    color={cellColors[weekIndex][dayIndex]}
+                  />
+                ))
+              )}
+
+              {/* Selection highlight */}
+              {selectedPosition && (
+                <RoundedRect
+                  x={selectedPosition.weekIndex * (cellSize + CELL_GAP) - 1}
+                  y={selectedPosition.dayIndex * (cellSize + CELL_GAP) - 1}
+                  width={cellSize + 2}
+                  height={cellSize + 2}
+                  r={CELL_RADIUS}
+                  color="transparent"
+                  style="stroke"
+                  strokeWidth={2}
+                />
+              )}
+            </Canvas>
+          </Pressable>
         </View>
       </ScrollView>
     </View>
@@ -334,7 +346,7 @@ const styles = StyleSheet.create({
     marginRight: Spacing.xs,
   },
   dayLabelsSpacer: {
-    height: 16 + Spacing.xs, // Match month labels row height + margin
+    height: 16 + Spacing.xs,
   },
   dayLabel: {
     fontSize: FontSizes.xs,
@@ -359,9 +371,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     fontSize: FontSizes.xs,
   },
-  grid: {
-    flexDirection: 'row',
-  },
 });
 
-export const ContributionGraph = memo(ContributionGraphComponent);
+export const SkiaContributionGraph = memo(SkiaContributionGraphComponent);

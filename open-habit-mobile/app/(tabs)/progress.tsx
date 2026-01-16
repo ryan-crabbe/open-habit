@@ -7,6 +7,8 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { StyleSheet, FlatList, View, ActivityIndicator, RefreshControl, TouchableOpacity, InteractionManager } from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
+import { Freeze } from 'react-freeze';
+import { useIsFocused } from '@react-navigation/native';
 
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
@@ -36,6 +38,7 @@ export default function ProgressScreen() {
   const errorColor = Colors[colorScheme].error;
   const tintColor = useThemeColor({}, 'tint');
   const textSecondary = useThemeColor({}, 'textSecondary');
+  const isFocused = useIsFocused();
 
   const [habitsWithCompletions, setHabitsWithCompletions] = useState<HabitWithCompletions[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -166,45 +169,47 @@ export default function ProgressScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
-      {habitsWithCompletions.length === 0 ? (
-        <View style={styles.emptyState}>
-          <IconSymbol name="chart.bar" size={48} color={textSecondary} />
-          <ThemedText style={styles.emptyTitle}>No progress yet</ThemedText>
-          <ThemedText style={[styles.emptySubtitle, { color: textSecondary }]}>
-            Create a habit and start logging to see your progress
-          </ThemedText>
-          <TouchableOpacity
-            style={[styles.createButton, { backgroundColor: tintColor }]}
-            onPress={() => router.push('/create-habit')}
-          >
-            <ThemedText style={styles.createButtonText}>Create Habit</ThemedText>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <FlatList
-          data={habitsWithCompletions}
-          renderItem={renderHabitCard}
-          keyExtractor={keyExtractor}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          // Performance optimizations
-          windowSize={5}
-          maxToRenderPerBatch={3}
-          updateCellsBatchingPeriod={100}
-          removeClippedSubviews={true}
-          initialNumToRender={3}
-          getItemLayout={getItemLayout}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={handleRefresh}
-              tintColor={tintColor}
-            />
-          }
-        />
-      )}
-    </ThemedView>
+    <Freeze freeze={!isFocused}>
+      <ThemedView style={styles.container}>
+        {habitsWithCompletions.length === 0 ? (
+          <View style={styles.emptyState}>
+            <IconSymbol name="chart.bar" size={48} color={textSecondary} />
+            <ThemedText style={styles.emptyTitle}>No progress yet</ThemedText>
+            <ThemedText style={[styles.emptySubtitle, { color: textSecondary }]}>
+              Create a habit and start logging to see your progress
+            </ThemedText>
+            <TouchableOpacity
+              style={[styles.createButton, { backgroundColor: tintColor }]}
+              onPress={() => router.push('/create-habit')}
+            >
+              <ThemedText style={styles.createButtonText}>Create Habit</ThemedText>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <FlatList
+            data={habitsWithCompletions}
+            renderItem={renderHabitCard}
+            keyExtractor={keyExtractor}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            // Performance optimizations - aggressive lazy rendering
+            windowSize={3}
+            maxToRenderPerBatch={2}
+            updateCellsBatchingPeriod={100}
+            removeClippedSubviews={true}
+            initialNumToRender={2}
+            getItemLayout={getItemLayout}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={handleRefresh}
+                tintColor={tintColor}
+              />
+            }
+          />
+        )}
+      </ThemedView>
+    </Freeze>
   );
 }
 

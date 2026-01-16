@@ -19,6 +19,8 @@ import {
   Platform,
 } from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
+import { Freeze } from 'react-freeze';
+import { useIsFocused } from '@react-navigation/native';
 
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
@@ -55,6 +57,7 @@ export default function LogScreen() {
   const { db, isReady, error } = useDatabase();
   const colorScheme = useColorScheme() ?? 'light';
   const errorColor = Colors[colorScheme].error;
+  const isFocused = useIsFocused();
 
   // Use ref for today's date - updated on focus to handle midnight crossover
   const todayRef = useRef(getLocalDate());
@@ -334,187 +337,189 @@ export default function LogScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
-      <View style={styles.header}>
-        <ThemedText style={styles.title}>Today&apos;s Habits</ThemedText>
-        <ThemedText style={styles.date}>{displayDate}</ThemedText>
-      </View>
-
-      {habits.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          {totalHabitCount === 0 ? (
-            // No habits created at all
-            <ThemedView style={styles.emptyState}>
-              <IconSymbol name="plus.circle" size={48} color={textSecondary} />
-              <ThemedText style={styles.emptyTitle}>No habits yet</ThemedText>
-              <ThemedText style={[styles.emptySubtitle, { color: textSecondary }]}>
-                Create your first habit to start tracking
-              </ThemedText>
-              <TouchableOpacity
-                style={[styles.createButton, { backgroundColor: tintColor }]}
-                onPress={() => router.push('/create-habit')}
-              >
-                <ThemedText style={styles.createButtonText}>Create Habit</ThemedText>
-              </TouchableOpacity>
-            </ThemedView>
-          ) : (
-            // Habits exist but none scheduled today
-            <ThemedView style={styles.emptyState}>
-              <IconSymbol name="checkmark.circle" size={48} color={tintColor} />
-              <ThemedText style={styles.emptyTitle}>All done for today!</ThemedText>
-              <ThemedText style={[styles.emptySubtitle, { color: textSecondary }]}>
-                No habits are scheduled for today. Enjoy your free time!
-              </ThemedText>
-            </ThemedView>
-          )}
+    <Freeze freeze={!isFocused}>
+      <ThemedView style={styles.container}>
+        <View style={styles.header}>
+          <ThemedText style={styles.title}>Today&apos;s Habits</ThemedText>
+          <ThemedText style={styles.date}>{displayDate}</ThemedText>
         </View>
-      ) : (
-        <FlatList
-          data={habits}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.habit.id.toString()}
-          contentContainerStyle={styles.listContent}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={handleRefresh}
-              tintColor={tintColor}
-            />
-          }
-          showsVerticalScrollIndicator={false}
-        />
-      )}
 
-      {/* Action Sheet Modal */}
-      <Modal
-        visible={showActionSheet}
-        transparent
-        animationType="fade"
-        onRequestClose={closeActionSheet}
-      >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={closeActionSheet}
-        >
-          <View style={[styles.actionSheet, { backgroundColor: cardColor }]}>
-            <View style={styles.actionSheetHeader}>
-              <ThemedText style={styles.actionSheetTitle}>
-                {selectedHabit?.habit.name}
-              </ThemedText>
-            </View>
-
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={handleUndo}
-              disabled={(selectedHabit?.completion?.count ?? 0) === 0}
-            >
-              <IconSymbol name="arrow.uturn.backward" size={22} color={tintColor} />
-              <ThemedText style={[
-                styles.actionButtonText,
-                (selectedHabit?.completion?.count ?? 0) === 0 && styles.disabledText
-              ]}>
-                Undo Last
-              </ThemedText>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={handleSkip}
-            >
-              <IconSymbol name="minus.circle" size={22} color={Colors[colorScheme].warning} />
-              <ThemedText style={styles.actionButtonText}>Skip Today</ThemedText>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={handleOpenNoteModal}
-            >
-              <IconSymbol name="note.text" size={22} color={tintColor} />
-              <ThemedText style={styles.actionButtonText}>
-                {selectedHabit?.completion?.note ? 'Edit Note' : 'Add Note'}
-              </ThemedText>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.actionButton, styles.cancelButton]}
-              onPress={closeActionSheet}
-            >
-              <ThemedText style={[styles.actionButtonText, { color: textSecondary }]}>
-                Cancel
-              </ThemedText>
-            </TouchableOpacity>
+        {habits.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            {totalHabitCount === 0 ? (
+              // No habits created at all
+              <ThemedView style={styles.emptyState}>
+                <IconSymbol name="plus.circle" size={48} color={textSecondary} />
+                <ThemedText style={styles.emptyTitle}>No habits yet</ThemedText>
+                <ThemedText style={[styles.emptySubtitle, { color: textSecondary }]}>
+                  Create your first habit to start tracking
+                </ThemedText>
+                <TouchableOpacity
+                  style={[styles.createButton, { backgroundColor: tintColor }]}
+                  onPress={() => router.push('/create-habit')}
+                >
+                  <ThemedText style={styles.createButtonText}>Create Habit</ThemedText>
+                </TouchableOpacity>
+              </ThemedView>
+            ) : (
+              // Habits exist but none scheduled today
+              <ThemedView style={styles.emptyState}>
+                <IconSymbol name="checkmark.circle" size={48} color={tintColor} />
+                <ThemedText style={styles.emptyTitle}>All done for today!</ThemedText>
+                <ThemedText style={[styles.emptySubtitle, { color: textSecondary }]}>
+                  No habits are scheduled for today. Enjoy your free time!
+                </ThemedText>
+              </ThemedView>
+            )}
           </View>
-        </TouchableOpacity>
-      </Modal>
+        ) : (
+          <FlatList
+            data={habits}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.habit.id.toString()}
+            contentContainerStyle={styles.listContent}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={handleRefresh}
+                tintColor={tintColor}
+              />
+            }
+            showsVerticalScrollIndicator={false}
+          />
+        )}
 
-      {/* Note Modal */}
-      <Modal
-        visible={showNoteModal}
-        transparent
-        animationType="fade"
-        onRequestClose={closeNoteModal}
-      >
-        <KeyboardAvoidingView
-          style={styles.modalOverlay}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        {/* Action Sheet Modal */}
+        <Modal
+          visible={showActionSheet}
+          transparent
+          animationType="fade"
+          onRequestClose={closeActionSheet}
         >
           <TouchableOpacity
-            style={styles.modalOverlayInner}
+            style={styles.modalOverlay}
             activeOpacity={1}
-            onPress={closeNoteModal}
+            onPress={closeActionSheet}
+          >
+            <View style={[styles.actionSheet, { backgroundColor: cardColor }]}>
+              <View style={styles.actionSheetHeader}>
+                <ThemedText style={styles.actionSheetTitle}>
+                  {selectedHabit?.habit.name}
+                </ThemedText>
+              </View>
+
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={handleUndo}
+                disabled={(selectedHabit?.completion?.count ?? 0) === 0}
+              >
+                <IconSymbol name="arrow.uturn.backward" size={22} color={tintColor} />
+                <ThemedText style={[
+                  styles.actionButtonText,
+                  (selectedHabit?.completion?.count ?? 0) === 0 && styles.disabledText
+                ]}>
+                  Undo Last
+                </ThemedText>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={handleSkip}
+              >
+                <IconSymbol name="minus.circle" size={22} color={Colors[colorScheme].warning} />
+                <ThemedText style={styles.actionButtonText}>Skip Today</ThemedText>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={handleOpenNoteModal}
+              >
+                <IconSymbol name="note.text" size={22} color={tintColor} />
+                <ThemedText style={styles.actionButtonText}>
+                  {selectedHabit?.completion?.note ? 'Edit Note' : 'Add Note'}
+                </ThemedText>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.actionButton, styles.cancelButton]}
+                onPress={closeActionSheet}
+              >
+                <ThemedText style={[styles.actionButtonText, { color: textSecondary }]}>
+                  Cancel
+                </ThemedText>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </Modal>
+
+        {/* Note Modal */}
+        <Modal
+          visible={showNoteModal}
+          transparent
+          animationType="fade"
+          onRequestClose={closeNoteModal}
+        >
+          <KeyboardAvoidingView
+            style={styles.modalOverlay}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           >
             <TouchableOpacity
+              style={styles.modalOverlayInner}
               activeOpacity={1}
-              style={[styles.noteModal, { backgroundColor: cardColor }]}
+              onPress={closeNoteModal}
             >
-              <View style={styles.noteModalHeader}>
-                <ThemedText style={styles.noteModalTitle}>Add Note</ThemedText>
-                <TouchableOpacity onPress={closeNoteModal}>
-                  <IconSymbol name="xmark" size={20} color={textSecondary} />
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity
+                activeOpacity={1}
+                style={[styles.noteModal, { backgroundColor: cardColor }]}
+              >
+                <View style={styles.noteModalHeader}>
+                  <ThemedText style={styles.noteModalTitle}>Add Note</ThemedText>
+                  <TouchableOpacity onPress={closeNoteModal}>
+                    <IconSymbol name="xmark" size={20} color={textSecondary} />
+                  </TouchableOpacity>
+                </View>
 
-              <TextInput
-                style={[
-                  styles.noteInput,
-                  {
-                    color: textColor,
-                    borderColor: textSecondary,
-                    backgroundColor: backgroundColor,
-                  },
-                ]}
-                value={noteText}
-                onChangeText={setNoteText}
-                placeholder="Enter a note..."
-                placeholderTextColor={textSecondary}
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-                autoFocus
-              />
+                <TextInput
+                  style={[
+                    styles.noteInput,
+                    {
+                      color: textColor,
+                      borderColor: textSecondary,
+                      backgroundColor: backgroundColor,
+                    },
+                  ]}
+                  value={noteText}
+                  onChangeText={setNoteText}
+                  placeholder="Enter a note..."
+                  placeholderTextColor={textSecondary}
+                  multiline
+                  numberOfLines={4}
+                  textAlignVertical="top"
+                  autoFocus
+                />
 
-              <View style={styles.noteModalButtons}>
-                <TouchableOpacity
-                  style={[styles.noteButton, styles.cancelNoteButton]}
-                  onPress={closeNoteModal}
-                >
-                  <ThemedText style={{ color: textSecondary }}>Cancel</ThemedText>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.noteButton, { backgroundColor: tintColor }]}
-                  onPress={handleSaveNote}
-                >
-                  <ThemedText style={{ color: '#FFFFFF', fontWeight: '600' }}>
-                    Save
-                  </ThemedText>
-                </TouchableOpacity>
-              </View>
+                <View style={styles.noteModalButtons}>
+                  <TouchableOpacity
+                    style={[styles.noteButton, styles.cancelNoteButton]}
+                    onPress={closeNoteModal}
+                  >
+                    <ThemedText style={{ color: textSecondary }}>Cancel</ThemedText>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.noteButton, { backgroundColor: tintColor }]}
+                    onPress={handleSaveNote}
+                  >
+                    <ThemedText style={{ color: '#FFFFFF', fontWeight: '600' }}>
+                      Save
+                    </ThemedText>
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
             </TouchableOpacity>
-          </TouchableOpacity>
-        </KeyboardAvoidingView>
-      </Modal>
-    </ThemedView>
+          </KeyboardAvoidingView>
+        </Modal>
+      </ThemedView>
+    </Freeze>
   );
 }
 
