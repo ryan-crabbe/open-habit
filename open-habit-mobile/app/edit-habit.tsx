@@ -166,6 +166,7 @@ export default function EditHabitScreen() {
   const backgroundColor = useThemeColor({}, 'background');
   const tintColor = useThemeColor({}, 'tint');
   const textSecondaryColor = useThemeColor({}, 'textSecondary');
+  const borderSecondary = Colors[colorScheme ?? 'light'].borderSecondary;
   const errorColor = Colors[colorScheme ?? 'light'].error;
 
   // Load habit on mount
@@ -329,7 +330,7 @@ export default function EditHabitScreen() {
   if (loadError) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
-        <View style={styles.header}>
+        <View style={[styles.header, { borderBottomColor: borderSecondary }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
             <ThemedText style={styles.cancelText}>Back</ThemedText>
           </TouchableOpacity>
@@ -348,7 +349,7 @@ export default function EditHabitScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: borderSecondary }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
           <ThemedText style={styles.cancelText}>Cancel</ThemedText>
         </TouchableOpacity>
@@ -452,7 +453,7 @@ export default function EditHabitScreen() {
           </FormSection>
 
           {/* Delete Button */}
-          <View style={styles.deleteSection}>
+          <View style={[styles.deleteSection, { borderTopColor: borderSecondary }]}>
             <TouchableOpacity
               style={[styles.deleteButton, { borderColor: errorColor }]}
               onPress={handleDelete}

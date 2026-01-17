@@ -14,7 +14,8 @@ import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAppTheme, ThemePreference } from '@/hooks/use-app-theme';
-import { Spacing, FontSizes } from '@/constants/theme';
+import { Spacing, FontSizes, Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 interface OptionRowProps {
   label: string;
@@ -44,9 +45,11 @@ function OptionRow({ label, description, isSelected, onPress }: OptionRowProps) 
 
 export default function ThemeSettingsScreen() {
   const { preference, setPreference, isLoading } = useAppTheme();
+  const colorScheme = useColorScheme() ?? 'light';
   const backgroundColor = useThemeColor({}, 'background');
   const cardBackground = useThemeColor({}, 'card');
   const tintColor = useThemeColor({}, 'tint');
+  const borderSecondary = Colors[colorScheme].borderSecondary;
 
   const handleSelect = async (pref: ThemePreference) => {
     if (pref === preference) return;
@@ -65,7 +68,7 @@ export default function ThemeSettingsScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: borderSecondary }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
           <ThemedText style={styles.backText}>Back</ThemedText>
         </TouchableOpacity>
@@ -82,13 +85,13 @@ export default function ThemeSettingsScreen() {
             isSelected={preference === 'system'}
             onPress={() => handleSelect('system')}
           />
-          <View style={styles.separator} />
+          <View style={[styles.separator, { backgroundColor: borderSecondary }]} />
           <OptionRow
             label="Light"
             isSelected={preference === 'light'}
             onPress={() => handleSelect('light')}
           />
-          <View style={styles.separator} />
+          <View style={[styles.separator, { backgroundColor: borderSecondary }]} />
           <OptionRow
             label="Dark"
             isSelected={preference === 'dark'}

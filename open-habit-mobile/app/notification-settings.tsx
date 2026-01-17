@@ -24,7 +24,8 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useNotifications } from '@/hooks/use-notifications';
 import { useDatabase, getHabits, getRemindersForHabit } from '@/database';
 import type { Habit, HabitReminder } from '@/database';
-import { Spacing, FontSizes, BorderRadius } from '@/constants/theme';
+import { Spacing, FontSizes, BorderRadius, Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 interface HabitWithReminders {
   habit: Habit;
@@ -43,11 +44,13 @@ export default function NotificationSettingsScreen() {
     openSettings,
   } = useNotifications();
 
+  const colorScheme = useColorScheme() ?? 'light';
   const backgroundColor = useThemeColor({}, 'background');
   const cardBackground = useThemeColor({}, 'card');
   const tintColor = useThemeColor({}, 'tint');
   const textSecondary = useThemeColor({}, 'textSecondary');
   const warningColor = useThemeColor({}, 'warning');
+  const borderSecondary = Colors[colorScheme].borderSecondary;
 
   const [habitsWithReminders, setHabitsWithReminders] = useState<
     HabitWithReminders[]
@@ -132,7 +135,7 @@ export default function NotificationSettingsScreen() {
       edges={['top']}
     >
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: borderSecondary }]}>
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.headerButton}
@@ -204,7 +207,7 @@ export default function NotificationSettingsScreen() {
           ) : (
             habitsWithReminders.map((item, index) => (
               <React.Fragment key={item.habit.id}>
-                {index > 0 && <View style={styles.separator} />}
+                {index > 0 && <View style={[styles.separator, { backgroundColor: borderSecondary }]} />}
                 <TouchableOpacity
                   style={styles.habitRow}
                   onPress={() => handleEditHabitReminders(item.habit.id)}

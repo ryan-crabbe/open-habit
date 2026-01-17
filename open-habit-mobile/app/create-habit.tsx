@@ -129,6 +129,7 @@ export default function CreateHabitScreen() {
   const backgroundColor = useThemeColor({}, 'background');
   const tintColor = useThemeColor({}, 'tint');
   const textSecondaryColor = useThemeColor({}, 'textSecondary');
+  const borderSecondary = Colors[colorScheme ?? 'light'].borderSecondary;
   const errorColor = Colors[colorScheme ?? 'light'].error;
 
   const handleSave = async () => {
@@ -212,7 +213,7 @@ export default function CreateHabitScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: borderSecondary }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
           <ThemedText style={styles.cancelText}>Cancel</ThemedText>
         </TouchableOpacity>

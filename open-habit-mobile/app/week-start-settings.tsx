@@ -14,7 +14,8 @@ import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useDatabase, getWeekStartDay, setWeekStartDay } from '@/database';
-import { Spacing, FontSizes } from '@/constants/theme';
+import { Spacing, FontSizes, Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 type WeekStartDay = 0 | 1;
 
@@ -37,9 +38,11 @@ function OptionRow({ label, isSelected, onPress }: OptionRowProps) {
 
 export default function WeekStartSettingsScreen() {
   const { db, isReady } = useDatabase();
+  const colorScheme = useColorScheme() ?? 'light';
   const backgroundColor = useThemeColor({}, 'background');
   const cardBackground = useThemeColor({}, 'card');
   const tintColor = useThemeColor({}, 'tint');
+  const borderSecondary = Colors[colorScheme].borderSecondary;
 
   const [weekStartDay, setWeekStartDayState] = useState<WeekStartDay>(1);
   const [isLoading, setIsLoading] = useState(true);
@@ -88,7 +91,7 @@ export default function WeekStartSettingsScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: borderSecondary }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
           <ThemedText style={styles.backText}>Back</ThemedText>
         </TouchableOpacity>
@@ -104,7 +107,7 @@ export default function WeekStartSettingsScreen() {
             isSelected={weekStartDay === 0}
             onPress={() => handleSelect(0)}
           />
-          <View style={styles.separator} />
+          <View style={[styles.separator, { backgroundColor: borderSecondary }]} />
           <OptionRow
             label="Monday"
             isSelected={weekStartDay === 1}
