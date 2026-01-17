@@ -1,10 +1,24 @@
-import { Tabs } from 'expo-router';
+import { Tabs, router } from 'expo-router';
 import React from 'react';
+import { TouchableOpacity } from 'react-native';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+
+function SettingsButton() {
+  const colorScheme = useColorScheme();
+  return (
+    <TouchableOpacity
+      onPress={() => router.push('/app-settings')}
+      style={{ marginRight: 16 }}
+      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+    >
+      <IconSymbol name="gearshape.fill" size={24} color={Colors[colorScheme ?? 'light'].icon} />
+    </TouchableOpacity>
+  );
+}
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -22,6 +36,7 @@ export default function TabLayout() {
           backgroundColor: Colors[colorScheme ?? 'light'].background,
         },
         headerTintColor: Colors[colorScheme ?? 'light'].text,
+        headerRight: () => <SettingsButton />,
       }}>
       <Tabs.Screen
         name="index"
@@ -38,10 +53,10 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="settings"
+        name="habits"
         options={{
-          title: 'Settings',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="gearshape.fill" color={color} />,
+          title: 'Habits',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="square.grid.2x2.fill" color={color} />,
         }}
       />
     </Tabs>
