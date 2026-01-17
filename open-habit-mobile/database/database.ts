@@ -124,6 +124,26 @@ export async function closeDatabase(): Promise<void> {
 }
 
 /**
+ * Clears all user data from the database (dev only)
+ * Deletes all habits, completions, reminders but keeps schema intact
+ */
+export async function clearAllData(): Promise<void> {
+  if (!__DEV__) {
+    throw new Error('clearAllData() can only be called in development mode');
+  }
+
+  const database = await getDatabase();
+
+  // Delete data in order to respect foreign keys
+  await database.execAsync(`
+    DELETE FROM habit_completions;
+    DELETE FROM habit_reminders;
+    DELETE FROM habits;
+    DELETE FROM app_settings WHERE key != 'schema_version' AND key != 'theme';
+  `);
+}
+
+/**
  * Resets the database (dev only)
  * Drops all tables and recreates from scratch
  * WARNING: This will delete all user data!

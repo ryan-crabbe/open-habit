@@ -3,7 +3,7 @@
  */
 
 // Core database functions
-export { initDatabase, getDatabase, closeDatabase, resetDatabase } from './database';
+export { initDatabase, getDatabase, closeDatabase, resetDatabase, clearAllData } from './database';
 export { DatabaseProvider, useDatabase } from './database-provider';
 export { CURRENT_SCHEMA_VERSION, SCHEMA_V1 } from './schema';
 

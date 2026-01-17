@@ -12,7 +12,7 @@ import { useIsFocused } from '@react-navigation/native';
 
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
-import { useDatabase, seedTestData, getDatabaseStats } from '@/database';
+import { useDatabase, seedTestData, getDatabaseStats, clearAllData } from '@/database';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { Colors } from '@/constants/theme';
@@ -52,6 +52,7 @@ export default function SettingsScreen() {
   const colorScheme = useColorScheme();
   const errorColor = Colors[colorScheme ?? 'light'].error;
   const [isSeeding, setIsSeeding] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
   const isFocused = useIsFocused();
 
   const handleSeedTestData = async () => {
@@ -97,6 +98,32 @@ export default function SettingsScreen() {
     } catch (err) {
       console.error('Failed to get stats:', err);
     }
+  };
+
+  const handleClearData = async () => {
+    Alert.alert(
+      'Clear All Data',
+      'This will delete all habits, completions, and reminders. This cannot be undone. Are you sure?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear Data',
+          style: 'destructive',
+          onPress: async () => {
+            setIsClearing(true);
+            try {
+              await clearAllData();
+              Alert.alert('Success', 'All data has been cleared');
+            } catch (err) {
+              console.error('Failed to clear data:', err);
+              Alert.alert('Error', 'Failed to clear data');
+            } finally {
+              setIsClearing(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   if (error) {
@@ -181,6 +208,13 @@ export default function SettingsScreen() {
                   icon="info.circle.fill"
                   title="Database Stats"
                   onPress={handleShowStats}
+                  showChevron={false}
+                />
+                <Separator />
+                <SettingsRow
+                  icon="trash.fill"
+                  title={isClearing ? 'Clearing...' : 'Clear All Data'}
+                  onPress={handleClearData}
                   showChevron={false}
                 />
               </ThemedView>
