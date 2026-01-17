@@ -6,24 +6,23 @@
 
 import React from 'react';
 import { StyleSheet, ScrollView, TouchableOpacity, View } from 'react-native';
-import { router, Href } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { Colors } from '@/constants/theme';
+import { Spacing, FontSizes, BorderRadius, Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 interface SettingsRowProps {
   icon: string;
   title: string;
   onPress: () => void;
-  showChevron?: boolean;
 }
 
-function SettingsRow({ icon, title, onPress, showChevron = true }: SettingsRowProps) {
+function SettingsRow({ icon, title, onPress }: SettingsRowProps) {
   const iconColor = useThemeColor({}, 'icon');
 
   return (
@@ -32,9 +31,7 @@ function SettingsRow({ icon, title, onPress, showChevron = true }: SettingsRowPr
         <IconSymbol name={icon as any} size={24} color={iconColor} />
         <ThemedText style={styles.rowTitle}>{title}</ThemedText>
       </View>
-      {showChevron && (
-        <IconSymbol name="chevron.right" size={20} color={iconColor} />
-      )}
+      <IconSymbol name="chevron.right" size={20} color={iconColor} />
     </TouchableOpacity>
   );
 }
@@ -45,50 +42,53 @@ function Separator() {
 }
 
 export default function AppSettingsScreen() {
-  const colorScheme = useColorScheme();
+  const colorScheme = useColorScheme() ?? 'light';
   const backgroundColor = useThemeColor({}, 'background');
-  const borderSecondary = Colors[colorScheme ?? 'light'].borderSecondary;
+  const tintColor = useThemeColor({}, 'tint');
+  const borderSecondary = Colors[colorScheme].borderSecondary;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: borderSecondary }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
-          <ThemedText style={styles.backText}>Back</ThemedText>
-        </TouchableOpacity>
-        <ThemedText style={styles.headerTitle}>Settings</ThemedText>
-        <View style={styles.headerButton} />
-      </View>
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+      <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
+        {/* Header */}
+        <View style={[styles.header, { borderBottomColor: borderSecondary }]}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <IconSymbol name="chevron.left" size={24} color={tintColor} />
+          </TouchableOpacity>
+          <ThemedText style={styles.headerTitle}>Settings</ThemedText>
+          <View style={styles.backButton} />
+        </View>
 
-      <ScrollView style={styles.content}>
-        <ThemedText style={styles.sectionHeader}>APP SETTINGS</ThemedText>
-        <ThemedView style={styles.section}>
-          <SettingsRow
-            icon="bell.fill"
-            title="Notifications"
-            onPress={() => router.push('/notification-settings' as Href)}
-          />
-          <Separator />
-          <SettingsRow
-            icon="moon.fill"
-            title="Theme"
-            onPress={() => router.push('/theme-settings' as Href)}
-          />
-          <Separator />
-          <SettingsRow
-            icon="square.and.arrow.up"
-            title="Export Data"
-            onPress={() => router.push('/export-data' as Href)}
-          />
-          <Separator />
-          <SettingsRow
-            icon="calendar"
-            title="Week Starts On"
-            onPress={() => router.push('/week-start-settings' as Href)}
-          />
-        </ThemedView>
-      </ScrollView>
-    </SafeAreaView>
+        <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+          <ThemedView style={styles.section}>
+            <SettingsRow
+              icon="bell.fill"
+              title="Notifications"
+              onPress={() => router.push('/notification-settings')}
+            />
+            <Separator />
+            <SettingsRow
+              icon="moon.fill"
+              title="Theme"
+              onPress={() => router.push('/theme-settings')}
+            />
+            <Separator />
+            <SettingsRow
+              icon="square.and.arrow.up"
+              title="Export Data"
+              onPress={() => router.push('/export-data')}
+            />
+            <Separator />
+            <SettingsRow
+              icon="calendar"
+              title="Week Starts On"
+              onPress={() => router.push('/week-start-settings')}
+            />
+          </ThemedView>
+        </ScrollView>
+      </SafeAreaView>
+    </>
   );
 }
 
@@ -100,36 +100,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerButton: {
-    minWidth: 60,
+  backButton: {
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 17,
+    fontSize: FontSizes.lg,
     fontWeight: '600',
-  },
-  backText: {
-    fontSize: 17,
   },
   content: {
     flex: 1,
   },
-  sectionHeader: {
-    fontSize: 13,
-    fontWeight: '600',
-    opacity: 0.6,
-    marginLeft: 16,
-    marginTop: 24,
-    marginBottom: 8,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+  contentContainer: {
+    padding: Spacing.lg,
   },
   section: {
-    marginHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: BorderRadius.lg,
     overflow: 'hidden',
   },
   row: {
@@ -137,15 +129,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.lg,
   },
   rowLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: Spacing.md,
   },
   rowTitle: {
-    fontSize: 17,
+    fontSize: FontSizes.md,
   },
   separator: {
     height: StyleSheet.hairlineWidth,
