@@ -22,7 +22,16 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { useDatabase, getHabitById, updateHabit, deleteHabit } from '@/database';
+import {
+  useDatabase,
+  getHabitById,
+  updateHabit,
+  deleteHabit,
+  getRemindersForHabit,
+  createReminder,
+  updateReminder,
+  deleteReminder,
+} from '@/database';
 import { HabitColors, Spacing, FontSizes, Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { getLocalDate } from '@/utils/date';
@@ -36,6 +45,7 @@ import { DailyFrequencyConfig } from '@/components/habit-form/DailyFrequencyConf
 import { WeeklyFrequencyConfig } from '@/components/habit-form/WeeklyFrequencyConfig';
 import { SpecificDaysConfig } from '@/components/habit-form/SpecificDaysConfig';
 import { EveryNDaysConfig } from '@/components/habit-form/EveryNDaysConfig';
+import { RemindersConfig, ReminderState } from '@/components/habit-form/RemindersConfig';
 
 // Form state shape
 interface FormState {
@@ -48,6 +58,7 @@ interface FormState {
   missedDayBehavior: MissedDayBehavior;
   color: string;
   allowOverload: boolean;
+  reminders: ReminderState[];
   errors: Record<string, string>;
   isSubmitting: boolean;
 }
@@ -63,6 +74,11 @@ type FormAction =
   | { type: 'SET_MISSED_DAY_BEHAVIOR'; payload: MissedDayBehavior }
   | { type: 'SET_COLOR'; payload: string }
   | { type: 'SET_ALLOW_OVERLOAD'; payload: boolean }
+  | { type: 'SET_REMINDERS'; payload: ReminderState[] }
+  | { type: 'ADD_REMINDER'; payload: string }
+  | { type: 'UPDATE_REMINDER'; payload: { index: number; time: string } }
+  | { type: 'TOGGLE_REMINDER'; payload: number }
+  | { type: 'REMOVE_REMINDER'; payload: number }
   | { type: 'SET_ERRORS'; payload: Record<string, string> }
   | { type: 'RESET_ERRORS' }
   | { type: 'SET_SUBMITTING'; payload: boolean }
@@ -79,6 +95,7 @@ function getInitialState(): FormState {
     missedDayBehavior: 'continue',
     color: HabitColors[0],
     allowOverload: true,
+    reminders: [],
     errors: {},
     isSubmitting: false,
   };
@@ -103,6 +120,7 @@ function habitToFormState(habit: Habit): FormState {
     missedDayBehavior: habit.missed_day_behavior ?? 'continue',
     color: habit.color,
     allowOverload: habit.allow_overload === 1,
+    reminders: [], // Loaded separately
     errors: {},
     isSubmitting: false,
   };
@@ -137,6 +155,32 @@ function formReducer(state: FormState, action: FormAction): FormState {
       return { ...state, color: action.payload };
     case 'SET_ALLOW_OVERLOAD':
       return { ...state, allowOverload: action.payload };
+    case 'SET_REMINDERS':
+      return { ...state, reminders: action.payload };
+    case 'ADD_REMINDER':
+      return {
+        ...state,
+        reminders: [...state.reminders, { time: action.payload, enabled: true }],
+      };
+    case 'UPDATE_REMINDER':
+      return {
+        ...state,
+        reminders: state.reminders.map((r, i) =>
+          i === action.payload.index ? { ...r, time: action.payload.time } : r
+        ),
+      };
+    case 'TOGGLE_REMINDER':
+      return {
+        ...state,
+        reminders: state.reminders.map((r, i) =>
+          i === action.payload ? { ...r, enabled: !r.enabled } : r
+        ),
+      };
+    case 'REMOVE_REMINDER':
+      return {
+        ...state,
+        reminders: state.reminders.filter((_, i) => i !== action.payload),
+      };
     case 'SET_ERRORS':
       return { ...state, errors: action.payload };
     case 'RESET_ERRORS':
@@ -191,6 +235,17 @@ export default function EditHabitScreen() {
         } else {
           setHabit(loadedHabit);
           dispatch({ type: 'INIT_FROM_HABIT', payload: loadedHabit });
+
+          // Load reminders
+          const loadedReminders = await getRemindersForHabit(db, habitId);
+          if (isMounted) {
+            const reminderState: ReminderState[] = loadedReminders.map((r) => ({
+              id: r.id,
+              time: r.time,
+              enabled: r.enabled === 1,
+            }));
+            dispatch({ type: 'SET_REMINDERS', payload: reminderState });
+          }
         }
       } catch (err) {
         if (!isMounted) return;
@@ -261,6 +316,30 @@ export default function EditHabitScreen() {
 
     try {
       await updateHabit(db, habitId, input);
+
+      // Save reminders
+      const existingReminders = await getRemindersForHabit(db, habitId);
+      const existingIds = new Set(existingReminders.map((r) => r.id));
+
+      for (const reminder of state.reminders) {
+        if (reminder.id) {
+          // Update existing reminder
+          await updateReminder(db, reminder.id, {
+            time: reminder.time,
+            enabled: reminder.enabled ? 1 : 0,
+          });
+          existingIds.delete(reminder.id);
+        } else {
+          // Create new reminder
+          await createReminder(db, habitId, reminder.time, reminder.enabled ? 1 : 0);
+        }
+      }
+
+      // Delete removed reminders
+      for (const id of existingIds) {
+        await deleteReminder(db, id);
+      }
+
       router.back();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to update habit';
@@ -450,6 +529,18 @@ export default function EditHabitScreen() {
                 trackColor={{ true: tintColor }}
               />
             </View>
+          </FormSection>
+
+          <FormSection label="Reminders">
+            <RemindersConfig
+              reminders={state.reminders}
+              onAdd={(time) => dispatch({ type: 'ADD_REMINDER', payload: time })}
+              onUpdate={(index, time) =>
+                dispatch({ type: 'UPDATE_REMINDER', payload: { index, time } })
+              }
+              onToggle={(index) => dispatch({ type: 'TOGGLE_REMINDER', payload: index })}
+              onRemove={(index) => dispatch({ type: 'REMOVE_REMINDER', payload: index })}
+            />
           </FormSection>
 
           {/* Delete Button */}

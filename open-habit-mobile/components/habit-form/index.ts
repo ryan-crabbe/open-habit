@@ -12,3 +12,4 @@ export { DailyFrequencyConfig } from './DailyFrequencyConfig';
 export { WeeklyFrequencyConfig } from './WeeklyFrequencyConfig';
 export { SpecificDaysConfig } from './SpecificDaysConfig';
 export { EveryNDaysConfig } from './EveryNDaysConfig';
+export { RemindersConfig, type ReminderState } from './RemindersConfig';
