@@ -37,6 +37,13 @@ export const Colors = {
     card: '#FFFFFF',
     cardBorder: '#E0E0E0',
 
+    // UI Elements
+    border: 'rgba(128, 128, 128, 0.2)',
+    borderSecondary: 'rgba(128, 128, 128, 0.3)',
+    modalOverlay: 'rgba(0, 0, 0, 0.5)',
+    buttonText: '#FFFFFF',
+    link: '#0a7ea4',
+
     // Habit states
     habitNotStarted: '#E0E0E0',
     habitInProgress: '#FFC107',
@@ -65,6 +72,13 @@ export const Colors = {
     // Card & Surface
     card: '#1E1E1E',
     cardBorder: '#333333',
+
+    // UI Elements
+    border: 'rgba(255, 255, 255, 0.1)',
+    borderSecondary: 'rgba(255, 255, 255, 0.15)',
+    modalOverlay: 'rgba(0, 0, 0, 0.7)',
+    buttonText: '#FFFFFF',
+    link: '#58a6ff',
 
     // Habit states
     habitNotStarted: '#424242',

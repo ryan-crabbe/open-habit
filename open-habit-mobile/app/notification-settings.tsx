@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(128, 128, 128, 0.3)',
+    borderBottomColor: undefined, // Set dynamically
   },
   headerButton: {
     minWidth: 60,
@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: 'rgba(128, 128, 128, 0.3)',
+    backgroundColor: undefined, // Set dynamically
     marginLeft: Spacing.lg + 12 + Spacing.md, // Align with text after color dot
   },
   emptyState: {

@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(128, 128, 128, 0.3)',
+    borderBottomColor: undefined, // Set dynamically
   },
   headerButton: {
     minWidth: 60,
@@ -520,7 +520,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.xxl,
     paddingTop: Spacing.xl,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(128, 128, 128, 0.3)',
+    borderTopColor: undefined, // Set dynamically
   },
   deleteButton: {
     padding: Spacing.md,

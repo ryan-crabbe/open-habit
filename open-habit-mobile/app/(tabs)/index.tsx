@@ -358,7 +358,7 @@ export default function LogScreen() {
                   style={[styles.createButton, { backgroundColor: tintColor }]}
                   onPress={() => router.push('/create-habit')}
                 >
-                  <ThemedText style={styles.createButtonText}>Create Habit</ThemedText>
+                  <ThemedText style={[styles.createButtonText, { color: Colors[colorScheme].buttonText }]}>Create Habit</ThemedText>
                 </TouchableOpacity>
               </ThemedView>
             ) : (
@@ -397,12 +397,12 @@ export default function LogScreen() {
           onRequestClose={closeActionSheet}
         >
           <TouchableOpacity
-            style={styles.modalOverlay}
+            style={[styles.modalOverlay, { backgroundColor: Colors[colorScheme].modalOverlay }]}
             activeOpacity={1}
             onPress={closeActionSheet}
           >
             <View style={[styles.actionSheet, { backgroundColor: cardColor }]}>
-              <View style={styles.actionSheetHeader}>
+              <View style={[styles.actionSheetHeader, { borderBottomColor: Colors[colorScheme].borderSecondary }]}>
                 <ThemedText style={styles.actionSheetTitle}>
                   {selectedHabit?.habit.name}
                 </ThemedText>
@@ -460,7 +460,7 @@ export default function LogScreen() {
           onRequestClose={closeNoteModal}
         >
           <KeyboardAvoidingView
-            style={styles.modalOverlay}
+            style={[styles.modalOverlay, { backgroundColor: Colors[colorScheme].modalOverlay }]}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           >
             <TouchableOpacity
@@ -509,7 +509,7 @@ export default function LogScreen() {
                     style={[styles.noteButton, { backgroundColor: tintColor }]}
                     onPress={handleSaveNote}
                   >
-                    <ThemedText style={{ color: '#FFFFFF', fontWeight: '600' }}>
+                    <ThemedText style={{ color: Colors[colorScheme].buttonText, fontWeight: '600' }}>
                       Save
                     </ThemedText>
                   </TouchableOpacity>
@@ -578,7 +578,6 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
   },
   createButtonText: {
-    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -588,7 +587,6 @@ const styles = StyleSheet.create({
   // Action Sheet
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
   },
   modalOverlayInner: {
@@ -606,7 +604,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: Spacing.lg,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(128, 128, 128, 0.3)',
+    borderBottomColor: undefined, // Set dynamically
     marginHorizontal: Spacing.lg,
   },
   actionSheetTitle: {

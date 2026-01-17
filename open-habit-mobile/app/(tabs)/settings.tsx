@@ -27,6 +27,7 @@ interface SettingsRowProps {
 
 function SettingsRow({ icon, title, onPress, showChevron = true }: SettingsRowProps) {
   const iconColor = useThemeColor({}, 'icon');
+  const borderSecondary = useThemeColor({}, 'borderSecondary');
 
   return (
     <TouchableOpacity style={styles.row} onPress={onPress} activeOpacity={0.7}>
@@ -39,6 +40,11 @@ function SettingsRow({ icon, title, onPress, showChevron = true }: SettingsRowPr
       )}
     </TouchableOpacity>
   );
+}
+
+function Separator() {
+  const borderSecondary = useThemeColor({}, 'borderSecondary');
+  return <View style={[styles.separator, { backgroundColor: borderSecondary }]} />;
 }
 
 export default function SettingsScreen() {
@@ -123,7 +129,7 @@ export default function SettingsScreen() {
               title="Create New Habit"
               onPress={() => router.push('/create-habit')}
             />
-            <View style={styles.separator} />
+            <Separator />
             <SettingsRow
               icon="list.bullet"
               title="Manage Habits"
@@ -139,19 +145,19 @@ export default function SettingsScreen() {
               title="Notifications"
               onPress={() => router.push('/notification-settings' as Href)}
             />
-            <View style={styles.separator} />
+            <Separator />
             <SettingsRow
               icon="moon.fill"
               title="Theme"
               onPress={() => router.push('/theme-settings' as Href)}
             />
-            <View style={styles.separator} />
+            <Separator />
             <SettingsRow
               icon="square.and.arrow.up"
               title="Export Data"
               onPress={() => router.push('/export-data' as Href)}
             />
-            <View style={styles.separator} />
+            <Separator />
             <SettingsRow
               icon="calendar"
               title="Week Starts On"
@@ -170,7 +176,7 @@ export default function SettingsScreen() {
                   onPress={handleSeedTestData}
                   showChevron={false}
                 />
-                <View style={styles.separator} />
+                <Separator />
                 <SettingsRow
                   icon="info.circle.fill"
                   title="Database Stats"
@@ -225,7 +231,6 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: 'rgba(128, 128, 128, 0.3)',
     marginLeft: 52,
   },
   errorText: {

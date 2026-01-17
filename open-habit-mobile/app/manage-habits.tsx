@@ -158,7 +158,7 @@ export default function ManageHabitsScreen() {
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { borderBottomColor: Colors[colorScheme ?? 'light'].borderSecondary }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
             <IconSymbol name="chevron.left" size={24} color={tintColor} />
           </TouchableOpacity>
@@ -180,7 +180,7 @@ export default function ManageHabitsScreen() {
               style={[styles.createButton, { backgroundColor: tintColor }]}
               onPress={() => router.push('/create-habit')}
             >
-              <ThemedText style={styles.createButtonText}>Create Habit</ThemedText>
+              <ThemedText style={[styles.createButtonText, { color: Colors[colorScheme ?? 'light'].buttonText }]}>Create Habit</ThemedText>
             </TouchableOpacity>
           </View>
         ) : (
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(128, 128, 128, 0.3)',
+    borderBottomColor: undefined, // Set dynamically
   },
   headerButton: {
     width: 44,
@@ -282,7 +282,6 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
   },
   createButtonText: {
-    color: '#FFFFFF',
     fontSize: FontSizes.md,
     fontWeight: '600',
   },

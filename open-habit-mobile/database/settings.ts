@@ -27,7 +27,7 @@ function isSettingKey(key: string): key is SettingKey {
 
 // Default values for settings
 export const DEFAULT_SETTINGS: Record<SettingKey, string> = {
-  theme: 'light',
+  theme: 'dark',
   week_start_day: '1', // Monday
   timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
   last_export_date: '',

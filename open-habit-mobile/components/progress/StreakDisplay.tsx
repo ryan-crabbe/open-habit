@@ -9,7 +9,8 @@ import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { Spacing, FontSizes } from '@/constants/theme';
+import { Spacing, FontSizes, Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import type { StreakResult } from '@/utils/streak';
 
 interface StreakDisplayProps {
@@ -21,6 +22,8 @@ interface StreakDisplayProps {
 
 function StreakDisplayComponent({ streak, habitColor }: StreakDisplayProps) {
   const textSecondary = useThemeColor({}, 'textSecondary');
+  const colorScheme = useColorScheme() ?? 'light';
+  const borderSecondary = Colors[colorScheme].borderSecondary;
 
   const unitLabel = streak.unit === 'weeks' ? 'week' : 'day';
   const currentUnit = streak.currentStreak === 1 ? unitLabel : `${unitLabel}s`;
@@ -37,7 +40,7 @@ function StreakDisplayComponent({ streak, habitColor }: StreakDisplayProps) {
         </ThemedText>
       </View>
 
-      <View style={styles.divider} />
+      <View style={[styles.divider, { backgroundColor: borderSecondary }]} />
 
       <View style={styles.streakItem}>
         <ThemedText style={[styles.streakValue, { color: textSecondary }]}>
@@ -73,7 +76,6 @@ const styles = StyleSheet.create({
   divider: {
     width: 1,
     height: 32,
-    backgroundColor: 'rgba(128, 128, 128, 0.3)',
   },
 });
 

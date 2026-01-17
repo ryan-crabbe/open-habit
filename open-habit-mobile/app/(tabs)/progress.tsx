@@ -182,7 +182,7 @@ export default function ProgressScreen() {
               style={[styles.createButton, { backgroundColor: tintColor }]}
               onPress={() => router.push('/create-habit')}
             >
-              <ThemedText style={styles.createButtonText}>Create Habit</ThemedText>
+              <ThemedText style={[styles.createButtonText, { color: Colors[colorScheme].buttonText }]}>Create Habit</ThemedText>
             </TouchableOpacity>
           </View>
         ) : (
@@ -250,7 +250,6 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
   },
   createButtonText: {
-    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },

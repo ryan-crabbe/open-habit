@@ -21,10 +21,11 @@ import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useDatabase, setLastExportDate } from '@/database';
 import { gatherExportData, formatAsJSON, formatAsCSV } from '@/utils/export';
 import { getLocalDate } from '@/utils/date';
-import { Spacing, FontSizes } from '@/constants/theme';
+import { Spacing, FontSizes, Colors } from '@/constants/theme';
 
 type ExportFormat = 'json' | 'csv';
 
@@ -38,7 +39,8 @@ interface FormatOptionProps {
 function FormatOption({ label, description, isSelected, onPress }: FormatOptionProps) {
   const tintColor = useThemeColor({}, 'tint');
   const textSecondary = useThemeColor({}, 'textSecondary');
-  const borderColor = isSelected ? tintColor : 'rgba(128, 128, 128, 0.3)';
+  const borderSecondary = useThemeColor({}, 'borderSecondary');
+  const borderColor = isSelected ? tintColor : borderSecondary;
 
   return (
     <TouchableOpacity
@@ -63,10 +65,13 @@ export default function ExportDataScreen() {
   const { db, isReady } = useDatabase();
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('json');
   const [isExporting, setIsExporting] = useState(false);
+  const colorScheme = useColorScheme() ?? 'light';
 
   const backgroundColor = useThemeColor({}, 'background');
   const cardBackground = useThemeColor({}, 'card');
   const tintColor = useThemeColor({}, 'tint');
+  const buttonTextColor = Colors[colorScheme].buttonText;
+  const borderSecondary = Colors[colorScheme].borderSecondary;
 
   const handleExport = async () => {
     if (!db) return;
@@ -132,7 +137,7 @@ export default function ExportDataScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: borderSecondary }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
           <ThemedText style={styles.backText}>Back</ThemedText>
         </TouchableOpacity>
@@ -166,11 +171,11 @@ export default function ExportDataScreen() {
           activeOpacity={0.8}
         >
           {isExporting ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={buttonTextColor} />
           ) : (
             <>
-              <IconSymbol name="square.and.arrow.up" size={20} color="#fff" />
-              <ThemedText style={styles.exportButtonText}>Export {selectedFormat.toUpperCase()}</ThemedText>
+              <IconSymbol name="square.and.arrow.up" size={20} color={buttonTextColor} />
+              <ThemedText style={[styles.exportButtonText, { color: buttonTextColor }]}>Export {selectedFormat.toUpperCase()}</ThemedText>
             </>
           )}
         </TouchableOpacity>
@@ -198,7 +203,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(128, 128, 128, 0.3)',
+    borderBottomColor: undefined, // Set dynamically
   },
   headerButton: {
     minWidth: 60,
@@ -254,7 +259,6 @@ const styles = StyleSheet.create({
     marginTop: Spacing.xl,
   },
   exportButtonText: {
-    color: '#fff',
     fontSize: FontSizes.md,
     fontWeight: '600',
   },
