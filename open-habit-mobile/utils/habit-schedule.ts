@@ -32,7 +32,7 @@ function getParsedFrequencyDays(habit: Habit): Record<string, number> | null {
     frequencyDaysCache.set(cacheKey, parsed);
     return parsed;
   } catch (err) {
-    console.error(`Failed to parse frequency_days for habit ${habit.id}:`, err);
+    if (__DEV__) console.error(`Failed to parse frequency_days for habit ${habit.id}:`, err);
     return null;
   }
 }

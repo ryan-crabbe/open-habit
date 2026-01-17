@@ -55,7 +55,7 @@ export default function WeekStartSettingsScreen() {
         const day = await getWeekStartDay(db);
         setWeekStartDayState(day === 0 ? 0 : 1);
       } catch (err) {
-        console.error('Failed to load week start day:', err);
+        if (__DEV__) console.error('Failed to load week start day:', err);
       } finally {
         setIsLoading(false);
       }
@@ -74,7 +74,7 @@ export default function WeekStartSettingsScreen() {
       await setWeekStartDay(db, day);
       router.back();
     } catch (err) {
-      console.error('Failed to save week start day:', err);
+      if (__DEV__) console.error('Failed to save week start day:', err);
       // Revert on error
       setWeekStartDayState(weekStartDay);
     }

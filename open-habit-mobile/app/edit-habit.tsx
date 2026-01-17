@@ -90,7 +90,7 @@ function habitToFormState(habit: Habit): FormState {
     try {
       frequencyDays = JSON.parse(habit.frequency_days);
     } catch (err) {
-      console.warn('Failed to parse frequency_days for habit:', habit.id, err);
+      if (__DEV__) console.warn('Failed to parse frequency_days for habit:', habit.id, err);
     }
   }
   return {
@@ -194,7 +194,7 @@ export default function EditHabitScreen() {
         }
       } catch (err) {
         if (!isMounted) return;
-        console.error('Failed to load habit:', err);
+        if (__DEV__) console.error('Failed to load habit:', err);
         setLoadError('Failed to load habit');
       } finally {
         if (isMounted) {
@@ -290,7 +290,7 @@ export default function EditHabitScreen() {
               router.back();
             } catch (err) {
               isDeletingRef.current = false;
-              console.error('Failed to delete habit:', err);
+              if (__DEV__) console.error('Failed to delete habit:', err);
               Alert.alert('Error', 'Failed to delete habit');
             }
           },

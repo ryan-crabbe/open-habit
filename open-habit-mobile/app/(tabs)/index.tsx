@@ -144,7 +144,7 @@ export default function LogScreen() {
       setTotalHabitCount(allHabits.length);
       setHabits(scheduledHabits);
     } catch (err) {
-      console.error('Failed to load habits:', err);
+      if (__DEV__) console.error('Failed to load habits:', err);
     } finally {
       if (currentLoadId === loadIdRef.current) {
         setIsLoading(false);
@@ -186,7 +186,7 @@ export default function LogScreen() {
       await incrementCompletion(db, item.habit.id, todayRef.current);
       await loadHabits();
     } catch (err) {
-      console.error('Failed to increment:', err);
+      if (__DEV__) console.error('Failed to increment:', err);
     }
   }, [db, loadHabits]);
 
@@ -203,7 +203,7 @@ export default function LogScreen() {
       await decrementCompletion(db, item.habit.id, todayRef.current);
       await loadHabits();
     } catch (err) {
-      console.error('Failed to decrement:', err);
+      if (__DEV__) console.error('Failed to decrement:', err);
     }
   }, [db, loadHabits]);
 
@@ -223,7 +223,7 @@ export default function LogScreen() {
               await skipCompletion(db, selectedHabit.habit.id, todayRef.current);
               await loadHabits();
             } catch (err) {
-              console.error('Failed to skip:', err);
+              if (__DEV__) console.error('Failed to skip:', err);
             }
             setShowActionSheet(false);
             setSelectedHabit(null);
@@ -240,7 +240,7 @@ export default function LogScreen() {
       await decrementCompletion(db, selectedHabit.habit.id, todayRef.current);
       await loadHabits();
     } catch (err) {
-      console.error('Failed to decrement:', err);
+      if (__DEV__) console.error('Failed to decrement:', err);
     }
     setShowActionSheet(false);
     setSelectedHabit(null);
@@ -264,7 +264,7 @@ export default function LogScreen() {
       }
       await loadHabits();
     } catch (err) {
-      console.error('Failed to save note:', err);
+      if (__DEV__) console.error('Failed to save note:', err);
     }
     setShowNoteModal(false);
     setSelectedHabit(null);

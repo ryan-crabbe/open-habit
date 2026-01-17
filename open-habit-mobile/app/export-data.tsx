@@ -111,7 +111,7 @@ export default function ExportDataScreen() {
       // Record export date
       await setLastExportDate(db);
     } catch (error) {
-      console.error('Export failed:', error);
+      if (__DEV__) console.error('Export failed:', error);
       Alert.alert('Error', 'Failed to export data. Please try again.');
     } finally {
       setIsExporting(false);

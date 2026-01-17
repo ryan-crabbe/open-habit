@@ -3,7 +3,7 @@
  */
 
 // Core database functions
-export { initDatabase, getDatabase, closeDatabase, resetDatabase, clearAllData } from './database';
+export { initDatabase, getDatabase, closeDatabase } from './database';
 export { DatabaseProvider, useDatabase } from './database-provider';
 export { CURRENT_SCHEMA_VERSION, SCHEMA_V1 } from './schema';
 
@@ -64,9 +64,6 @@ export {
   DEFAULT_SETTINGS,
   type SettingKey,
 } from './settings';
-
-// Seeding (dev only)
-export { seedTestData, isDatabaseEmpty, getDatabaseStats } from './seed';
 
 // Re-export types
 export type { Habit, HabitCompletion, HabitReminder, AppSetting, FrequencyType, CompletionDisplay, MissedDayBehavior } from '../data/test-data';

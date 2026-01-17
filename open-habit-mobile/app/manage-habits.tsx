@@ -43,7 +43,7 @@ export default function ManageHabitsScreen() {
           const loadedHabits = await getHabits(db);
           setHabits(loadedHabits);
         } catch (err) {
-          console.error('Failed to load habits:', err);
+          if (__DEV__) console.error('Failed to load habits:', err);
         } finally {
           setIsLoading(false);
         }
@@ -69,13 +69,13 @@ export default function ManageHabitsScreen() {
       const orderedIds = data.map((h) => h.id);
       await reorderHabits(db, orderedIds);
     } catch (err) {
-      console.error('Failed to save habit order:', err);
+      if (__DEV__) console.error('Failed to save habit order:', err);
       // Reload from database to get correct order
       try {
         const loadedHabits = await getHabits(db);
         setHabits(loadedHabits);
       } catch (reloadErr) {
-        console.error('Failed to reload habits:', reloadErr);
+        if (__DEV__) console.error('Failed to reload habits:', reloadErr);
         setHabits(previousHabits);
       }
       Alert.alert('Error', 'Failed to save habit order');

@@ -77,7 +77,7 @@ export default function ProgressScreen() {
 
       setHabitsWithCompletions(habitsData);
     } catch (err) {
-      console.error('Failed to load progress data:', err);
+      if (__DEV__) console.error('Failed to load progress data:', err);
     }
   }, [db]);
 

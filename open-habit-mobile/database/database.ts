@@ -91,11 +91,11 @@ async function migrate(database: SQLite.SQLiteDatabase): Promise<void> {
       throw new Error(`Missing schema for version ${nextVersion}`);
     }
 
-    console.log(`Running migration to version ${nextVersion}...`);
+    if (__DEV__) console.log(`Running migration to version ${nextVersion}...`);
     await database.execAsync(schema);
     await setSchemaVersion(database, nextVersion);
     version = nextVersion;
-    console.log(`Migration to version ${nextVersion} complete`);
+    if (__DEV__) console.log(`Migration to version ${nextVersion} complete`);
   }
 }
 
@@ -108,7 +108,7 @@ async function migrate(database: SQLite.SQLiteDatabase): Promise<void> {
 export async function initDatabase(): Promise<SQLite.SQLiteDatabase> {
   const database = await getDatabase();
   await migrate(database);
-  console.log('Database initialized successfully');
+  if (__DEV__) console.log('Database initialized successfully');
   return database;
 }
 

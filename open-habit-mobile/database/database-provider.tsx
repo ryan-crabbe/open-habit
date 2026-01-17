@@ -43,7 +43,7 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
           setIsReady(true);
         }
       } catch (err) {
-        console.error('Failed to initialize database:', err);
+        if (__DEV__) console.error('Failed to initialize database:', err);
         if (mounted) {
           setError(err instanceof Error ? err : new Error(String(err)));
         }

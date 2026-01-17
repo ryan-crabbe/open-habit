@@ -66,7 +66,7 @@ export function AppThemeProvider({ children }: AppThemeProviderProps) {
           setPreferenceState('system');
         }
       } catch (err) {
-        console.error('Failed to load theme preference:', err);
+        if (__DEV__) console.error('Failed to load theme preference:', err);
         setPreferenceState('system');
       } finally {
         setIsLoading(false);
@@ -95,7 +95,7 @@ export function AppThemeProvider({ children }: AppThemeProviderProps) {
           await setSetting(db, 'theme', pref);
         }
       } catch (err) {
-        console.error('Failed to save theme preference:', err);
+        if (__DEV__) console.error('Failed to save theme preference:', err);
         // Revert on error
         setPreferenceState(previousPreference);
       }

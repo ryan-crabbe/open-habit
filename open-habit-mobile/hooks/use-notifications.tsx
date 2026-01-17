@@ -139,7 +139,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
         const enabled = await getSetting(db, 'notifications_enabled');
         setIsEnabledState(enabled !== '0');
       } catch (err) {
-        console.error('Failed to load notification settings:', err);
+        if (__DEV__) console.error('Failed to load notification settings:', err);
       } finally {
         setIsLoading(false);
       }
@@ -257,7 +257,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
         }
       }
     } catch (err) {
-      console.error('Failed to reschedule notifications:', err);
+      if (__DEV__) console.error('Failed to reschedule notifications:', err);
     }
   }, [db, isEnabled, permissionStatus, scheduleNotificationForReminder]);
 
@@ -280,7 +280,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
           await Notifications.cancelAllScheduledNotificationsAsync();
         }
       } catch (err) {
-        console.error('Failed to save notification setting:', err);
+        if (__DEV__) console.error('Failed to save notification setting:', err);
         // Revert on error
         setIsEnabledState(previousEnabled);
       }

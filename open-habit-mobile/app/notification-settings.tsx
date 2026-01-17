@@ -76,7 +76,7 @@ export default function NotificationSettingsScreen() {
 
           setHabitsWithReminders(habitsData);
         } catch (err) {
-          console.error('Failed to load habits:', err);
+          if (__DEV__) console.error('Failed to load habits:', err);
         } finally {
           setIsLoadingHabits(false);
         }
