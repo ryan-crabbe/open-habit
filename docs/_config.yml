@@ -1,6 +1,6 @@
 title: OpenHabit
 description: A simple, privacy-focused habit tracking app
-theme: jekyll-theme-slate
+theme: jekyll-theme-minimal
 exclude:
   - architecture.md
   - database.md
