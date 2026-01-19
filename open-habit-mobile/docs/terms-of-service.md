@@ -64,7 +64,7 @@ These Terms shall be governed by and construed in accordance with the laws of th
 
 If you have questions about these Terms, please contact:
 
-**Email**: [your-email@example.com]
+**Email**: rcrabbe@berkeley.edu
 
 ## Severability
 

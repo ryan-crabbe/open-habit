@@ -66,7 +66,7 @@ We may update this Privacy Policy from time to time. Any changes will be reflect
 
 ## Contact
 
-If you have questions about this Privacy Policy, please contact us at [openhabit@example.com](mailto:openhabit@example.com).
+If you have questions about this Privacy Policy, please contact us at [rcrabbe@berkeley.edu](mailto:rcrabbe@berkeley.edu).
 
 ## Summary
 

@@ -18,4 +18,4 @@ OpenHabit helps you build and maintain positive habits. All your data stays on y
 
 ## Contact
 
-For support or questions, email [openhabit@example.com](mailto:openhabit@example.com).
+For support or questions, email [rcrabbe@berkeley.edu](mailto:rcrabbe@berkeley.edu).

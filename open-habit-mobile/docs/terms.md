@@ -67,7 +67,7 @@ These Terms shall be governed by and construed in accordance with the laws of th
 
 ## Contact
 
-If you have questions about these Terms, please contact us at [openhabit@example.com](mailto:openhabit@example.com).
+If you have questions about these Terms, please contact us at [rcrabbe@berkeley.edu](mailto:rcrabbe@berkeley.edu).
 
 ## Severability
 
