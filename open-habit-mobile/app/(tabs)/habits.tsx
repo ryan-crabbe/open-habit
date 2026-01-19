@@ -10,7 +10,6 @@ import { router, Href, useFocusEffect } from 'expo-router';
 import { Freeze } from 'react-freeze';
 import { useIsFocused } from '@react-navigation/native';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
@@ -159,47 +158,45 @@ export default function HabitsScreen() {
 
   return (
     <Freeze freeze={!isFocused}>
-      <GestureHandlerRootView style={styles.container}>
-        <ThemedView style={styles.container}>
-          {!isReady || isLoading ? (
-            <View style={styles.centered}>
-              <ActivityIndicator size="large" color={tintColor} />
-            </View>
-          ) : habits.length === 0 ? (
-            <View style={styles.centered}>
-              <IconSymbol name="square.grid.2x2" size={48} color={textSecondary} />
-              <ThemedText style={styles.emptyTitle}>No habits yet</ThemedText>
-              <ThemedText style={[styles.emptySubtitle, { color: textSecondary }]}>
-                Create your first habit to start tracking
+      <ThemedView style={styles.container}>
+        {!isReady || isLoading ? (
+          <View style={styles.centered}>
+            <ActivityIndicator size="large" color={tintColor} />
+          </View>
+        ) : habits.length === 0 ? (
+          <View style={styles.centered}>
+            <IconSymbol name="square.grid.2x2" size={48} color={textSecondary} />
+            <ThemedText style={styles.emptyTitle}>No habits yet</ThemedText>
+            <ThemedText style={[styles.emptySubtitle, { color: textSecondary }]}>
+              Create your first habit to start tracking
+            </ThemedText>
+            <TouchableOpacity
+              style={[styles.emptyCreateButton, { backgroundColor: tintColor }]}
+              onPress={() => router.push('/create-habit')}
+            >
+              <ThemedText style={[styles.createButtonText, { color: Colors[colorScheme].buttonText }]}>
+                Create Habit
               </ThemedText>
-              <TouchableOpacity
-                style={[styles.emptyCreateButton, { backgroundColor: tintColor }]}
-                onPress={() => router.push('/create-habit')}
-              >
-                <ThemedText style={[styles.createButtonText, { color: Colors[colorScheme].buttonText }]}>
-                  Create Habit
-                </ThemedText>
-              </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <>
+            <DraggableFlatList
+              data={habits}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={renderHabitItem}
+              onDragEnd={handleDragEnd}
+              ListHeaderComponent={renderHeader}
+              contentContainerStyle={styles.listContent}
+            />
+            <View style={styles.hintContainer}>
+              <ThemedText style={[styles.hintText, { color: textSecondary }]}>
+                Long press and drag to reorder
+              </ThemedText>
             </View>
-          ) : (
-            <>
-              <DraggableFlatList
-                data={habits}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={renderHabitItem}
-                onDragEnd={handleDragEnd}
-                ListHeaderComponent={renderHeader}
-                contentContainerStyle={styles.listContent}
-              />
-              <View style={styles.hintContainer}>
-                <ThemedText style={[styles.hintText, { color: textSecondary }]}>
-                  Long press and drag to reorder
-                </ThemedText>
-              </View>
-            </>
-          )}
-        </ThemedView>
-      </GestureHandlerRootView>
+          </>
+        )}
+      </ThemedView>
     </Freeze>
   );
 }

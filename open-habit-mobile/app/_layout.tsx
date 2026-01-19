@@ -2,6 +2,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AppThemeProvider } from '@/hooks/use-app-theme';
@@ -81,12 +82,14 @@ function RootLayoutContent() {
 
 export default function RootLayout() {
   return (
-    <DatabaseProvider>
-      <NotificationProvider>
-        <AppThemeProvider>
-          <RootLayoutContent />
-        </AppThemeProvider>
-      </NotificationProvider>
-    </DatabaseProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <DatabaseProvider>
+        <NotificationProvider>
+          <AppThemeProvider>
+            <RootLayoutContent />
+          </AppThemeProvider>
+        </NotificationProvider>
+      </DatabaseProvider>
+    </GestureHandlerRootView>
   );
 }
